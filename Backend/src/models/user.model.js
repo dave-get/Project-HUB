@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema(
         },
         email:{
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         password:{
             type: String,
@@ -17,7 +18,25 @@ const userSchema = new mongoose.Schema(
         },
         role:{
             type: String,
-            required: true
+            required: true,
+            enum: ['student', 'teacher', 'advisor']
+        },
+        // Student specific fields
+        department: String,
+        bio: String,
+        imageUrl: {
+            type: String,
+            default: "default-profile.jpg"
+        },
+        phone: String,
+        location: String,
+        socialLinks: [{
+            platform: String,
+            url: String
+        }],
+        skills: {
+            technical: [String],
+            soft: [String]
         }
     },{ timestamps: true }
 )

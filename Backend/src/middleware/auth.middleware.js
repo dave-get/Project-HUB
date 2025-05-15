@@ -3,25 +3,53 @@ import User from "../models/user.model.js"
 
 export const protectRoute = async(req,res,next) => {
     try {
-        const token = req.cookies.jwt
-
-        if(!token) {
-            return res.status(401).json({ message:"Unauthorized - No Token Provided" })
+        // Get token from Authorization header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ 
+                success: false,
+                message: "Unauthorized - No Token Provided" 
+            });
         }
 
-        const decoded = jwt.verify(token,process.env.JWT_SECRET)
-
-        if(!decoded) {
-            return res.status(401).json({ message:"Unauthorized - Invalid Token" })
+        const token = authHeader.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ 
+                success: false,
+                message: "Unauthorized - No Token Provided" 
+            });
         }
 
-        const user = await User.findById(decoded.userId).select("-password")
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded) {
+            return res.status(401).json({ 
+                success: false,
+                message: "Unauthorized - Invalid Token" 
+            });
+        }
 
-        req.user = user
+        // Set user info directly from token
+        req.user = {
+            _id: decoded.userId,
+            email: decoded.email,
+            fullName: decoded.fullName,
+            role: decoded.role,
+            department: decoded.department,
+            headline: decoded.headline,
+            bio: decoded.bio,
+            phone: decoded.phone,
+            location: decoded.location,
+            imageUrl: decoded.imageUrl,
+            socialLinks: decoded.socialLinks,
+            skills: decoded.skills
+        }
         
         next()
     } catch (error) {
         console.log(`Error in protectRoute middleware: ${error.message}`)
-        res.status(500).json({ message: "Internal server error" })
+        res.status(401).json({ 
+            success: false,
+            message: "Unauthorized - Invalid Token" 
+        })
     }
 }
