@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: project-hub-backend
+    env: node
+    region: oregon  # You can change this to your preferred region
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false  # You'll need to set this in Render's dashboard
+      - key: JWT_SECRET
+        sync: false  # You'll need to set this in Render's dashboard
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false  # You'll need to set this in Render's dashboard
+      - key: CLOUDINARY_API_KEY
+        sync: false  # You'll need to set this in Render's dashboard
+      - key: CLOUDINARY_API_SECRET
+        sync: false  # You'll need to set this in Render's dashboard
+    healthCheckPath: /api/health  # You might want to add a health check endpoint
+    autoDeploy: true 
