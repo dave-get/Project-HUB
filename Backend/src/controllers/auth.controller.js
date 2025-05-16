@@ -33,10 +33,10 @@ export const signUp = async (req,res) => {
         }
 
         // Validate role
-        if (!['student', 'teacher', 'advisor'].includes(role)) {
+        if (!['student', 'teacher', 'admin'].includes(role)) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid role. Must be student, teacher, or advisor"
+                message: "Invalid role. Must be student, teacher, or admin"
             })
         }
 
@@ -100,8 +100,8 @@ export const signUp = async (req,res) => {
 }
 
 // signin
-export const login = async (req,res) => {
-    const { email, password, role } = req.body
+export const login = async (req, res) => {
+    const { email, password } = req.body
 
     try {
         if (!email || !password) {
@@ -111,9 +111,8 @@ export const login = async (req,res) => {
             })
         }
 
-        // Find user by email and role if role is provided
-        const query = role ? { email, role } : { email }
-        const user = await User.findOne(query)
+        // Find user by email only
+        const user = await User.findOne({ email })
         
         if(!user){
             return res.status(400).json({ 
@@ -136,7 +135,12 @@ export const login = async (req,res) => {
             success: true,
             message: "Login successful",
             data: {
-                accessToken: token
+                accessToken: token,
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    name: user.fullName
+                }
             }
         })
     } catch (error) {

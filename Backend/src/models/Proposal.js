@@ -58,11 +58,6 @@ const feedbackSchema = new mongoose.Schema({
 });
 
 const proposalSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true
-  },
   title: {
     type: String,
     required: true
@@ -82,12 +77,8 @@ const proposalSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['submitted', 'approved', 'rejected'],
-    default: 'draft'
-  },
-  submittedAt: {
-    type: Date,
-    default: Date.now
+    enum: ['Pending', 'approved', 'rejected'],
+    default: 'Pending'
   },
   attachments: [{
     name: {
@@ -100,6 +91,10 @@ const proposalSchema = new mongoose.Schema({
     },
     type: {
       type: String,
+      required: true
+    },
+    size: {
+      type: Number,
       required: true
     }
   }],
@@ -121,5 +116,6 @@ proposalSchema.virtual('feedback', {
 // Ensure virtuals are included in JSON
 proposalSchema.set('toJSON', { virtuals: true });
 proposalSchema.set('toObject', { virtuals: true });
+
 
 export default mongoose.model('Proposal', proposalSchema); 

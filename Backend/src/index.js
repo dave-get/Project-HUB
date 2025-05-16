@@ -1,3 +1,4 @@
+dotenv.config();
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -9,7 +10,6 @@ import { connectDB } from './lib/db.js';
 import teacherProfileRoutes from './routes/teacherProfileRoutes.js';
 import studentProfileRoutes from './routes/studentProfileRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
-dotenv.config();
 
 const app = express();
 
