@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://astu-g5-t1.onrender.com';
+export const API_BASE_URL = 'https://project-hub-qikh.onrender.com';
 
 // Auth routes
 export const AUTH_ROUTES = {

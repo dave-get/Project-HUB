@@ -21,7 +21,7 @@ const SidebarProfile = () => {
           href="/profile"
         >
           <Avatar className="h-10 w-10 border-2 border-green-500">
-            <AvatarImage src="" alt="Kiya Kebe" />
+            <AvatarImage src="/" alt="Dawit Getachew" />
             <AvatarFallback>D</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">

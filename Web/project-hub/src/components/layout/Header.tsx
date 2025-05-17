@@ -27,7 +27,7 @@ const Header = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-10 w-10 border-2 border-primary">
-                <AvatarImage src="" alt="dawit getachew" />
+                <AvatarImage src="/" alt="dawit getachew" />
                 <AvatarFallback>D</AvatarFallback>
               </Avatar>
             </Button>
