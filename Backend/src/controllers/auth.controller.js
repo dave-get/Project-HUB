@@ -2,6 +2,9 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import cloudinary from "../config/cloudinary.js";
+import upload from "../middleware/multer.js";
+
 
 export const signUp = async (req, res) => {
   const { email, password, role, ...otherFields } = req.body;
@@ -49,6 +52,16 @@ export const signUp = async (req, res) => {
       });
     }
 
+    // Check if file was uploaded successfully
+    if (!req.file || !req.file.secure_url) {
+      return res.status(400).json({
+        success: false,
+        message: "No image uploaded or image upload failed",
+      });
+    }
+
+    const imageUrl = req.file.secure_url;
+
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -57,8 +70,9 @@ export const signUp = async (req, res) => {
     const userData = {
       email,
       password: hashedPassword,
-      fullName: otherFields.fullName || email.split("@")[0],
+      fullName: otherFields.fullName,
       role,
+      imageUrl, // Use the obtained or default imageUrl
     };
 
     // Add role-specific fields
@@ -66,14 +80,10 @@ export const signUp = async (req, res) => {
       Object.assign(userData, {
         department: otherFields.department,
         bio: otherFields.bio,
-        imageUrl: otherFields.imageUrl || "default-profile.jpg",
         phone: otherFields.phone,
         location: otherFields.location,
         socialLinks: otherFields.socialLinks || [],
-        skills: otherFields.skills || {
-          technical: [],
-          soft: [],
-        },
+        skills: otherFields.skills || [],
       });
     }
 
@@ -83,6 +93,7 @@ export const signUp = async (req, res) => {
 
     const token = generateToken(newUser, res);
 
+    // Respond with success and user data (including imageUrl)
     res.status(201).json({
       success: true,
       message: `${
@@ -90,10 +101,16 @@ export const signUp = async (req, res) => {
       } registered successfully`,
       data: {
         accessToken: token,
+        user: {
+          _id: newUser._id,
+          fullName: newUser.fullName,
+          email: newUser.email,
+          role: newUser.role,
+          imageUrl: newUser.imageUrl,
+        },
       },
     });
   } catch (error) {
-    console.log(`Error in signup controller ${error.message}`);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -232,4 +249,35 @@ export const getProfile = async (req, res) => {
       message: "Unauthorized - Invalid Token",
     });
   }
+};
+
+export const uploadImageFile = (req, res, next) => {
+  upload.single("imageUrl")(req, res, (err) => {
+    if (err) return next(err);
+
+    // Configure upload options for JPG, PNG, and JPEG images
+    const uploadOptions = {
+      folder: 'project-hub/images', // Specify the folder in Cloudinary
+      resource_type: "image", // Specify the upload as an image
+      allowed_formats: ["jpg", "jpeg", "png"], // Restrict to JPG, PNG, and JPEG
+    };
+
+    cloudinary.uploader.upload(req.file.path, uploadOptions, (err, result) => {
+      if (err) {
+        console.error("Cloudinary upload error:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Image upload to Cloudinary failed",
+          error: err.message,
+        });
+      }
+      req.file = {
+        ...req.file,
+        secure_url: result.secure_url,
+        url: result.url,
+        public_id: result.public_id,
+      };
+      next();
+    });
+  });
 };
