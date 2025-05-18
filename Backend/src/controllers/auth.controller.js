@@ -217,10 +217,7 @@ export const getProfile = async (req, res) => {
         phone: user.phone,
         location: user.location,
         socialLinks: user.socialLinks || [],
-        skills: user.skills || {
-          technical: [],
-          soft: [],
-        },
+        skills: user.skills || [],
       });
     }
 
