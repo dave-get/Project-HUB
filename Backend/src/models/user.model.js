@@ -35,8 +35,7 @@ const userSchema = new mongoose.Schema(
             url: String
         }],
         skills: {
-            technical: [String],
-            soft: [String]
+            type: string
         }
     },{ timestamps: true }
 )
