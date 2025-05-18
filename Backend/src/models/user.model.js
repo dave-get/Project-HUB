@@ -26,7 +26,6 @@ const userSchema = new mongoose.Schema(
     bio: String,
     imageUrl: {
       type: String,
-      default: "default-profile.jpg",
     },
     phone: String,
     location: String,
