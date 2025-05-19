@@ -31,7 +31,8 @@ const getErrorMessage = (
 ): string => {
   if (!error) return "";
   if ("status" in error) {
-    return "An error occurred during login";
+    const errorData = (error as FetchBaseQueryError).data as any;
+    return errorData?.message || "An error occurred during login";
   }
   return error.message || "An error occurred during login";
 };
@@ -50,11 +51,10 @@ const Login = () => {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      const response = await login(data).unwrap();
+      await login(data).unwrap();
       toast.success("Login successful!");
       router.push("/home");
     } catch (err) {
-      console.error("Login failed:", err);
       toast.error(getErrorMessage(err as FetchBaseQueryError | SerializedError));
     }
   }

@@ -9,7 +9,7 @@ interface LoginCredentials {
 }
 
 interface AuthResponse {
-    access_token: string;
+    accessToken: string;
 }
 
 export const authApi = createApi({
@@ -26,14 +26,13 @@ export const authApi = createApi({
             async onQueryStarted(_, { queryFulfilled }) {
                 try {
                     const { data } = await queryFulfilled;
-                    // Store access token in cookie
-                    Cookies.set('access_token', data.access_token, {
-                        expires: 1, // 1 day
+                    Cookies.set('access_token', data.accessToken, {
+                        expires: 1,
                         secure: true,
                         sameSite: 'strict',
                     });
                 } catch (error) {
-                    console.error('Login failed:', error);
+                    // Silent fail - error is handled by the component
                 }
             },
         }),

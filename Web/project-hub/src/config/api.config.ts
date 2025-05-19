@@ -9,7 +9,7 @@ export const AUTH_ROUTES = {
 
 // User routes
 export const USER_ROUTES = {
-    BASE: '/api/auth/me',
+    BASE: '/api/auth/profile',
 } as const;
 
 // Combine all routes for easy access
