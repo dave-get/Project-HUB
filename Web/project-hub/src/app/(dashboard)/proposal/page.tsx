@@ -1,9 +1,16 @@
-import React from 'react'
+//src/app/(dashboard)/proposal/page.tsx
+import { ProposalCard } from "@/components/ui/proposal-card";
+import { proposals } from "@/config/proposals";
 
-const page = () => {
+export default function ProposalsPage() {
   return (
-    <div>Proposal</div>
-  )
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Proposals</h1>
+      <div className="space-y-4">
+        {proposals.map((proposal) => (
+          <ProposalCard key={proposal.id} {...proposal} />
+        ))}
+      </div>
+    </div>
+  );
 }
-
-export default page
