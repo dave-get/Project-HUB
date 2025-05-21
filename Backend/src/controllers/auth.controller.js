@@ -7,14 +7,14 @@ import upload from "../middleware/multer.js";
 
 
 export const signUp = async (req, res) => {
-  const { email, password, role, ...otherFields } = req.body;
+  const { fullName, email, password, role, ...otherFields } = req.body;
 
   try {
     // Validate required fields
-    if (!email || !password || !role) {
+    if (!fullName || !email || !password || !role) {
       return res.status(400).json({
         success: false,
-        message: "Email, password, and role are required",
+        message: "Full Name, Email, Password, and Role are required",
       });
     }
 
@@ -70,10 +70,15 @@ export const signUp = async (req, res) => {
     const userData = {
       email,
       password: hashedPassword,
-      fullName: otherFields.fullName,
+      fullName,
       role,
       imageUrl, // Use the obtained or default imageUrl
     };
+
+    // Only add imageUrl if a file was uploaded
+    if (req.file?.secure_url) {
+      userData.imageUrl = req.file.secure_url;
+    }
 
     // Add role-specific fields
     if (role === "student") {
@@ -252,14 +257,19 @@ export const getProfile = async (req, res) => {
 };
 
 export const uploadImageFile = (req, res, next) => {
+  // If no file is uploaded, proceed to next middleware
+  if (!req.file) {
+    return next();
+  }
+
   upload.single("imageUrl")(req, res, (err) => {
     if (err) return next(err);
 
     // Configure upload options for JPG, PNG, and JPEG images
     const uploadOptions = {
-      folder: 'project-hub/images', // Specify the folder in Cloudinary
-      resource_type: "image", // Specify the upload as an image
-      allowed_formats: ["jpg", "jpeg", "png"], // Restrict to JPG, PNG, and JPEG
+      folder: 'project-hub/images',
+      resource_type: "image",
+      allowed_formats: ["jpg", "jpeg", "png"],
     };
 
     cloudinary.uploader.upload(req.file.path, uploadOptions, (err, result) => {

@@ -1,5 +1,5 @@
 import Proposal from '../models/Proposal.js';
-import Feedback from '../models/Feedback.js';
+import Feedback from '../models/ProposalFeedback.js';
 import User from '../models/user.model.js';
 
 

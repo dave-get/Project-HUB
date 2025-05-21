@@ -7,7 +7,9 @@ import {
   deleteProject,
   incrementViews,
   addLike,
-  addComment
+  addComment,
+  uploadProjectFiles,
+  updateProjectStatus
 } from '../controllers/projectController.js';
 
 const router = express.Router();
@@ -15,9 +17,12 @@ const router = express.Router();
 // Project routes
 router.get('/', getProjects);
 router.get('/:id', getProject);
-router.post('/', createProject);
-router.put('/:id', updateProject);
+router.post('/', uploadProjectFiles, createProject);
+router.put('/:id', uploadProjectFiles, updateProject);
 router.delete('/:id', deleteProject);
+
+// Route to update project status
+router.put('/:id/status', updateProjectStatus);
 
 // Additional functionality routes
 router.post('/:id/view', incrementViews);

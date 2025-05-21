@@ -7,9 +7,9 @@ import projectRoutes from "./routes/projectRoutes.js";
 import authRoutes from "./routes/auth.route.js";
 import proposalRoutes from "./routes/proposalRoutes.js";
 import { connectDB } from "./lib/db.js";
-import feedbackRoutes from "./routes/feedbackRoutes.js";
+import proposalFeedbackRoutes from "./routes/proposalFeedbackRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
-
+import projectFeedbackRoutes from "./routes/projectFeedbackRoutes.js"
 const app = express();
 
 // Middleware
@@ -22,7 +22,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/proposals", proposalRoutes);
 app.use("/api/users", profileRoutes);
-app.use("/api/feedback", feedbackRoutes);
+app.use("/api/feedback", proposalFeedbackRoutes);
+app.use("/api/project", projectFeedbackRoutes)
 
 // MongoDB connection
 mongoose

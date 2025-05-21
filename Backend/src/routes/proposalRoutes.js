@@ -9,7 +9,7 @@ import {
 } from "../controllers/proposalController.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import checkRole from "../middleware/roleCheck.js";
-import feedbackRoutes from "./feedbackRoutes.js";
+import feedbackRoutes from "./proposalFeedbackRoutes.js";
 
 const router = express.Router();
 
