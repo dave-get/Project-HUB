@@ -64,7 +64,6 @@ export const signUp = async (req, res) => {
       role,
     };
 
-    // Only add imageUrl if a file was uploaded successfully
     if (req.file?.secure_url) {
       userData.imageUrl = req.file.secure_url;
     }
