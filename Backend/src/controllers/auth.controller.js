@@ -52,16 +52,6 @@ export const signUp = async (req, res) => {
       });
     }
 
-    // Check if file was uploaded successfully
-    if (!req.file || !req.file.secure_url) {
-      return res.status(400).json({
-        success: false,
-        message: "No image uploaded or image upload failed",
-      });
-    }
-
-    const imageUrl = req.file.secure_url;
-
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -72,10 +62,9 @@ export const signUp = async (req, res) => {
       password: hashedPassword,
       fullName,
       role,
-      imageUrl, // Use the obtained or default imageUrl
     };
 
-    // Only add imageUrl if a file was uploaded
+    // Only add imageUrl if a file was uploaded successfully
     if (req.file?.secure_url) {
       userData.imageUrl = req.file.secure_url;
     }
