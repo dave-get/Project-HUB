@@ -36,10 +36,10 @@ export const signUp = async (req, res) => {
     }
 
     // Validate role
-    if (!["student", "teacher", "admin"].includes(role)) {
+    if (!["community", "student", "teacher", "admin"].includes(role)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid role. Must be student, teacher, or admin",
+        message: "Invalid role. Must be community, student, teacher, or admin",
       });
     }
 
