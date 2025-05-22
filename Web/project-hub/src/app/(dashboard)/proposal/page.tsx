@@ -1,8 +1,9 @@
 import React from 'react'
+import ProposalsComponent from '@/components/Proposal-component/ProposalComponent'
 
 const page = () => {
   return (
-    <div>Proposal</div>
+    <ProposalsComponent />
   )
 }
 
