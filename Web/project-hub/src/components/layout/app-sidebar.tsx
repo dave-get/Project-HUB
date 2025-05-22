@@ -61,6 +61,10 @@ const menuItems: MenuItem[] = [
         title: "Rejected",
         url: `/proposal/rejected`,
       },
+      {
+        title: "Feedback",
+        url: `/proposal/Feedback`,
+      },
     ],
   },
   {

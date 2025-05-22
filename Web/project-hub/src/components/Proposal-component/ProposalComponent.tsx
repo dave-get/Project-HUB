@@ -56,7 +56,7 @@ const proposals: Proposal[] = [
     submitter: "Alex Johnson",
     submittedDate: "May 15, 2023",
     submittedTime: "9:30 AM",
-    status: "Pending",
+    status: "Approved",
   },
 ];
 
