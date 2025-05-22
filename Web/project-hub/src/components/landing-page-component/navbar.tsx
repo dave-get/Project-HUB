@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import Login from "../auth-component/signin";
+import { ThemeToggle } from "../layout/theme-toggler";
 
 export default function Navbar() {
   return (
-    <header className="border-b bg-white">
+    <header className="border-b bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
@@ -66,13 +67,14 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search projects..."
-                className="w-64 pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-64 pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
+            <ThemeToggle />
             <Popover>
               <PopoverTrigger asChild>
-                <Button className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50">
+                <Button className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-gray-700">
                   Login
                 </Button>
               </PopoverTrigger>
