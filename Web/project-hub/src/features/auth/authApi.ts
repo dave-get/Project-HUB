@@ -1,15 +1,23 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 import { baseQuery } from '@/lib/baseQuery';
 import { AUTH_ROUTES } from '@/config/api.config';
 
-interface LoginCredentials {
+export interface SignupCredentials {
+    fullName: string;
     email: string;
     password: string;
+    role: string;
 }
 
 interface AuthResponse {
     accessToken: string;
+    role: string;
+}
+
+interface LoginCredentials {
+    email: string;
+    password: string;
 }
 
 export const authApi = createApi({
@@ -36,6 +44,13 @@ export const authApi = createApi({
                 }
             },
         }),
+        signup: builder.mutation<AuthResponse, SignupCredentials>({
+            query: (credentials) => ({
+                url: AUTH_ROUTES.SIGNUP,
+                method: 'POST',
+                body: credentials,
+            }),
+        }),
         logout: builder.mutation<void, void>({
             query: () => ({
                 url: AUTH_ROUTES.LOGOUT,
@@ -56,5 +71,6 @@ export const authApi = createApi({
 
 export const {
     useLoginMutation,
+    useSignupMutation,
     useLogoutMutation,
 } = authApi; 
