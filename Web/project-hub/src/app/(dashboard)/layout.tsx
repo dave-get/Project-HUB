@@ -1,3 +1,4 @@
+//src/app/(dashboard)/proposal/page.tsx
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import Header from "@/components/layout/Header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
