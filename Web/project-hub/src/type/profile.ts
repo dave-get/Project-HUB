@@ -7,6 +7,7 @@ export type profileType = {
   bio: string;
   phone: string;
   location: string;
+  imageUrl: string; // Added image field
   socialLinks: {
     linkedin: string;
     github: string;

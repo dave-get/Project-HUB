@@ -13,8 +13,15 @@ export const USER_ROUTES = {
     BASE: '/auth/profile',
 } as const;
 
+// Proposal Feedback routes
+export const PROPOSAL_FEEDBACK_ROUTES = {
+    BASE: '/feedback/proposal',
+    BY_ID: (id: string) => `/feedback/proposal/${id}`,
+} as const;
+
 // Combine all routes for easy access
 export const API_ROUTES = {
     AUTH: AUTH_ROUTES,
     USERS: USER_ROUTES,
+    PROPOSAL_FEEDBACK: PROPOSAL_FEEDBACK_ROUTES,
 } as const;
