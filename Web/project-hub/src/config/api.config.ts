@@ -2,14 +2,15 @@ export const API_BASE_URL = 'https://project-hub-qikh.onrender.com';
 
 // Auth routes
 export const AUTH_ROUTES = {
-    LOGIN: '/api/auth/login',
-    LOGOUT: '/api/auth/logout',
-    REFRESH: '/api/auth/refresh',
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    SIGNUP: '/auth/signup',
+    REFRESH: '/auth/refresh',
 } as const;
 
 // User routes
 export const USER_ROUTES = {
-    BASE: '/api/auth/profile',
+    BASE: '/auth/profile',
 } as const;
 
 // Combine all routes for easy access
