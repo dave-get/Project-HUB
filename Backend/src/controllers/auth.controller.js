@@ -36,10 +36,10 @@ export const signUp = async (req, res) => {
     }
 
     // Validate role
-    if (!["student", "teacher", "admin"].includes(role)) {
+    if (!["community", "student", "teacher", "admin"].includes(role)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid role. Must be student, teacher, or admin",
+        message: "Invalid role. Must be community, student, teacher, or admin",
       });
     }
 
@@ -64,6 +64,7 @@ export const signUp = async (req, res) => {
       role,
     };
 
+    // Only add imageUrl if a file was uploaded successfully
     if (req.file?.secure_url) {
       userData.imageUrl = req.file.secure_url;
     }
