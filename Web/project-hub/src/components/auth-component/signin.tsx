@@ -19,6 +19,9 @@ import { useLoginMutation } from "@/features/auth/authApi";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { SerializedError } from "@reduxjs/toolkit";
 
+interface LoginResponse {
+  role: string;
+}
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -51,9 +54,14 @@ const Login = () => {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      await login(data).unwrap();
+      const result = await login(data).unwrap();
       toast.success("Login successful!");
-      router.push("/home");
+      
+      if (result.role === "community") {
+        router.push("/");
+      } else {
+        router.push("/home");
+      }
     } catch (err) {
       toast.error(getErrorMessage(err as FetchBaseQueryError | SerializedError));
     }
