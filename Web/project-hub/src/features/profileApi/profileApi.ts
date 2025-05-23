@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/lib/baseQuery";
 import Cookies from "js-cookie";
-import { USER_ROUTES } from "@/config/api.config";
+import { PROFILE_ROUTES, USER_ROUTES } from "@/config/api.config";
 import { UserType, profileType } from "@/type/profile";
 
 export const profileApi = createApi({
