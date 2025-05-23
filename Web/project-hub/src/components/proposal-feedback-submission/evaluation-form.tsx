@@ -4,7 +4,11 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateFeedbackMutation } from "@/features/proposalFeedbackApi/proposalFeedbackApi";
-import { feedbackFormSchema, type FeedbackFormData, type FeedbackSection } from "@/lib/validations/feedback";
+import {
+  feedbackFormSchema,
+  type FeedbackFormData,
+  type FeedbackSection,
+} from "@/lib/validations/feedback";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -15,12 +19,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StarRating from "./star-rating";
 import { toast } from "sonner";
 import { useGetProposalsQuery } from "@/features/proposalsApi/proposalsApi";
 import { SubmissionResponse } from "@/type/proposal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 const DEFAULT_SECTIONS = [
   {
@@ -58,12 +62,15 @@ interface EvaluationFormProps {
 }
 
 const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
+  const [status, setStatus] = useState<string>("")
   const [createFeedback, { isLoading }] = useCreateFeedbackMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const { data } = useGetProposalsQuery();
-  const proposals = data as SubmissionResponse
-  const proposal = proposals?.data?.find((proposal) => proposal._id === proposalId);
+  const proposals = data as SubmissionResponse;
+  const proposal = proposals?.data?.find(
+    (proposal) => proposal._id === proposalId
+  );
 
   const {
     register,
@@ -105,7 +112,7 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
     const files =
       (event as React.ChangeEvent<HTMLInputElement>).target?.files ||
       (event as React.DragEvent<HTMLDivElement>).dataTransfer?.files;
-    
+
     if (files) {
       const allowedTypes = [
         "application/pdf",
@@ -140,7 +147,10 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
         downloadLink: `https://storage.example.com/feedback/${file.name}`,
       }));
 
-      setValue("attachments", [...(watch("attachments") || []), ...mockAttachments]);
+      setValue("attachments", [
+        ...(watch("attachments") || []),
+        ...mockAttachments,
+      ]);
     }
   };
 
@@ -159,7 +169,9 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
     );
     setValue(
       "attachments",
-      (watch("attachments") || []).filter((att: { fileName: string }) => att.fileName !== fileName)
+      (watch("attachments") || []).filter(
+        (att: { fileName: string }) => att.fileName !== fileName
+      )
     );
   };
 
@@ -167,7 +179,8 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
     try {
       await createFeedback({
         ...data,
-        attachments: data.attachments || []
+        status,
+        attachments: data.attachments || [],
       }).unwrap();
       toast.success("Feedback submitted successfully!");
     } catch (error) {
@@ -181,16 +194,30 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
     <form onSubmit={handleSubmit(onSubmit)} className="mx-auto py-6 px-4">
       <Card className="mb-6">
         <CardHeader className="border-b">
-          <CardTitle className="text-lg">
-            {proposal?.title}
-          </CardTitle>
-          <div className="text-sm text-muted-foreground">
-            <span>Proposal ID: {watch("proposalId")}</span> •{" "}
-            <span>
-              {proposal?.createdAt
-                ? new Date(proposal.createdAt).toLocaleString()
-                : "N/A"}
-            </span>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-lg">{proposal?.title}</CardTitle>
+              <div className="text-sm text-muted-foreground">
+                <span>Proposal ID: {watch("proposalId")}</span> •{" "}
+                <span>
+                  {proposal?.createdAt
+                    ? new Date(proposal.createdAt).toLocaleString()
+                    : "N/A"}
+                </span>
+              </div>
+            </div>
+            <div className="w-[200px]">
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Approved">Approved</SelectItem>
+                  <SelectItem value="Rejected">Rejected</SelectItem>
+                  <SelectItem value="Needs Revision">Needs Revision</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pt-4 pb-2">
@@ -310,7 +337,9 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
                       key={index}
                       className="text-sm flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-2 rounded"
                     >
-                      <span className="truncate max-w-[300px]">{file.name}</span>
+                      <span className="truncate max-w-[300px]">
+                        {file.name}
+                      </span>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -332,8 +361,10 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
           <div className="text-sm text-muted-foreground">
             Overall Score:{" "}
             {(
-              sections.reduce((acc: number, section: FeedbackSection) => acc + section.rating, 0) /
-              sections.length
+              sections.reduce(
+                (acc: number, section: FeedbackSection) => acc + section.rating,
+                0
+              ) / sections.length
             ).toFixed(1)}{" "}
             / 5
           </div>
