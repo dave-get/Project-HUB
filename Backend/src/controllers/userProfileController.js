@@ -2,6 +2,7 @@ import User from '../models/user.model.js';
 import cloudinary from '../config/cloudinary.js';
 import upload from '../middleware/multer.js';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 // Helper function to safely parse JSON
 const safeParseJSON = (str) => {
@@ -115,6 +116,41 @@ export const updateUserProfile = async (req, res) => {
         delete req.body.role;
         delete req.body.email;
 
+        // Handle password update if provided
+        if (req.body.password) {
+            // Check if current password is provided
+            if (!req.body.currentPassword) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Current password is required to update password'
+                });
+            }
+
+            // Verify current password
+            const isPasswordValid = await bcrypt.compare(req.body.currentPassword, user.password);
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Current password is incorrect'
+                });
+            }
+
+            // Validate new password
+            if (req.body.password.length < 8) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Password must be at least 8 characters long'
+                });
+            }
+
+            // Hash new password
+            const salt = await bcrypt.genSalt(10);
+            req.body.password = await bcrypt.hash(req.body.password, salt);
+        }
+
+        // Remove currentPassword from body as it's not needed in the update
+        delete req.body.currentPassword;
+
         // Parse socialLinks and skills if they are strings
         if (req.body.socialLinks) {
             req.body.socialLinks = safeParseJSON(req.body.socialLinks);
@@ -132,7 +168,8 @@ export const updateUserProfile = async (req, res) => {
             'location',
             'imageUrl',
             'socialLinks',
-            'skills'
+            'skills',
+            'password'  // Added password to allowed fields
         ];
 
         const updateFields = {};
