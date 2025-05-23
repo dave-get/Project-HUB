@@ -70,16 +70,16 @@ export default function Navbar() {
               Project-HUB
             </Link>
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Features
+              <Link href="/home" className="text-muted-foreground hover:text-foreground transition-colors">
+                Home
               </Link>
               <Link
                 href="#"
-                className="text-gray-600 hover:text-gray-900 font-medium"
+                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
                 Projects
               </Link>
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
+              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                 Contact
               </Link>
             </nav>

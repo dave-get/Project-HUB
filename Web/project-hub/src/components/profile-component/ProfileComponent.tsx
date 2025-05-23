@@ -64,7 +64,7 @@ const ProfileComponent = () => {
                   <Linkedin size={16} />
                   {profileData?.data?.socialLinks?.linkedin}
                 </a>
-                <a href={`https://twitter.com/${profileData?.data?.socialLinks.twitter}`} className="flex items-center gap-2 text-sm text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                <a href={`https://twitter.com/${profileData?.data?.socialLinks?.twitter}`} className="flex items-center gap-2 text-sm text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
                   <Twitter size={16} />
                   {profileData?.data?.socialLinks?.twitter}
                 </a>
