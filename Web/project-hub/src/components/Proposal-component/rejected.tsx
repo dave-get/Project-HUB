@@ -9,7 +9,7 @@ const RejectedProposals = () => {
   const { data: proposals } = useGetProposalsQuery();
   
   const rejectedProposals = proposals?.data?.filter(
-    (proposal: Submission) => proposal.status === "Rejected"
+    (proposal: Submission) => proposal.feedbackList[0]?.status === "Rejected"
   ) || [];
 
   return (

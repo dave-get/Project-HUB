@@ -9,7 +9,7 @@ const ApprovedProposals = () => {
   const { data: proposals } = useGetProposalsQuery();
   
   const approvedProposals = proposals?.data?.filter(
-    (proposal: Submission) => proposal.status === "Approved"
+    (proposal: Submission) => proposal.feedbackList[0]?.status === "Approved"
   ) || [];
 
   return (

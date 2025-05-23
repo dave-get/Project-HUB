@@ -1,3 +1,36 @@
+export type SubmissionResponse = {
+  success: boolean;
+  count: number;
+  data: Submission[];
+};
+
+export type Submission = {
+  _id: string;
+  id: string;
+  title: string;
+  student: Student;
+  teacher: Teacher;
+  status: 'Pending' | 'Approved' | 'Rejected' | string;
+  attachments: Attachment[];
+  feedbackList: Feedback[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
+
+export type Student = {
+  _id: string;
+  fullName: string;
+  email: string;
+  department: string;
+};
+
+export type Teacher = {
+  _id: string;
+  fullName: string;
+  email: string;
+};
+
 export type Attachment = {
   name: string;
   url: string;
@@ -7,29 +40,31 @@ export type Attachment = {
   id: string;
 };
 
-export type UserInfo = {
+export type Feedback = {
   _id: string;
-  fullName: string;
-  email: string;
-  department?: string; // Optional for teacher
-};
-
-export type Submission = {
-  _id: string;
-  title: string;
-  student: UserInfo;
-  teacher: Omit<UserInfo, 'department'>;
-  status: string;
-  attachments: Attachment[];
-  feedbackList: any[]; // Adjust type if feedback structure is known
+  teacher: string;
+  projectTitle: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | string;
+  sections: FeedbackSection[];
+  attachments: FeedbackAttachment[];
   createdAt: string;
   updatedAt: string;
-  __v: number;
-  id: string;
 };
 
-export type SubmissionResponse = {
-  success: boolean;
-  count: number;
-  data: Submission[];
+export type FeedbackSection = {
+  _id: string;
+  id: string;
+  title: string;
+  rating: number;
+  strengths: string;
+  areasForImprovement: string;
+  comments: string;
+};
+
+export type FeedbackAttachment = {
+  _id: string;
+  id: string;
+  fileName: string;
+  size: string;
+  downloadLink: string;
 };

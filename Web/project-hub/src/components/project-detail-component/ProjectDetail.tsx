@@ -174,7 +174,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ id, data }) => {
 
           {/* Tab Content */}
           <div
-            className="mb-12 mx-4 p-6 border border-border rounded-lg bg-card/50"
+            className="mb-12 p-6 border border-border rounded-lg bg-card/50"
             role="tabpanel"
             id={`${activeTab}-panel`}
             aria-labelledby={activeTab}
