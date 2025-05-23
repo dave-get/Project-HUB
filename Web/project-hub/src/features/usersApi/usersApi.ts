@@ -1,10 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/lib/baseQuery";
 import Cookies from "js-cookie";
-import { USER_ROUTES } from "@/config/api.config";
 import { profileType } from "@/type/profile";
-
-
+import { USER_ROUTES } from "@/config/api.config";
 
 export const usersApi = createApi({
   reducerPath: "usersApi",
@@ -14,7 +12,7 @@ export const usersApi = createApi({
     // Get all users with optional filtering
     getUsers: builder.query<profileType[], void>({
       query: (params) => ({
-        url: USER_ROUTES.BASE,
+        url: USER_ROUTES.PROFILE,
         method: "GET",
         token: Cookies.get("access_token"),
       }),
@@ -23,7 +21,7 @@ export const usersApi = createApi({
     // Get teachers only
     getTeachers: builder.query<profileType[], void>({
       query: () => ({
-        url: USER_ROUTES.BASE,
+        url: USER_ROUTES.PROFILE,
         method: "GET",
         token: Cookies.get("access_token"),
       }),
