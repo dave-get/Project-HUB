@@ -1,4 +1,5 @@
 export type profileType = {
+  _id: string;
   email: string;
   password: string;
   fullName: string;
@@ -7,6 +8,7 @@ export type profileType = {
   bio: string;
   phone: string;
   location: string;
+  imageUrl: string;
   socialLinks: {
     linkedin: string;
     github: string;
