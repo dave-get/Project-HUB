@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,10 +8,30 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
 import Login from "../auth-component/signin";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { useLogoutMutation } from "@/features/auth/authApi";
+import { useRouter } from "next/navigation";
+import { useGetUserQuery } from "@/features/profileApi/profileApi";
+import Cookies from 'js-cookie';
 
 export default function Navbar() {
+  const router = useRouter();
+  const { data: user, isLoading } = useGetUserQuery();
+  const [logout] = useLogoutMutation();
+  const token = Cookies.get('access_token')
+  
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      Cookies.remove('access_token');
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto px-4">
@@ -70,16 +92,60 @@ export default function Navbar() {
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50">
-                  Login
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <Login />
-              </PopoverContent>
-            </Popover>
+            {token ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-10 w-10 border-2 border-primary">
+                      {!isLoading && (
+                        <>
+                          <AvatarImage 
+                            src={user?.data?.imageUrl || ''} 
+                            alt={user?.data?.fullName || 'User'} 
+                          />
+                          <AvatarFallback>
+                            {user?.data?.fullName?.[0] || 'U'}
+                          </AvatarFallback>
+                        </>
+                      )}
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-foreground">
+                        {user?.data?.fullName || 'Loading...'}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.data?.email || 'Loading...'}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="text-foreground cursor-pointer"
+                    onClick={handleLogout}
+                  >
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50">
+                    Login
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <Login />
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         </div>
       </div>
