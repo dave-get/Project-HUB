@@ -2,7 +2,7 @@ import User from '../models/user.model.js';
 import cloudinary from '../config/cloudinary.js';
 import upload from '../middleware/multer.js';
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcrypt";
 
 // Helper function to safely parse JSON
 const safeParseJSON = (str) => {
