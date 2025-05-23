@@ -16,12 +16,14 @@ import { useLogoutMutation } from "@/features/auth/authApi";
 import { useRouter } from "next/navigation";
 import { useGetUserQuery } from "@/features/profileApi/profileApi";
 import Cookies from 'js-cookie';
+import { userAgentFromString } from "next/server";
 
 export default function Navbar() {
   const router = useRouter();
   const { data: user, isLoading } = useGetUserQuery();
   const [logout] = useLogoutMutation();
   const token = Cookies.get('access_token')
+  console.log(user)
   
   const handleLogout = async () => {
     try {

@@ -48,7 +48,6 @@ export default function ProposalsPage() {
       </div>
     );
   }
-
   if (!profileData?.data?.role) {
     return (
       <div className="container mx-auto py-6">
