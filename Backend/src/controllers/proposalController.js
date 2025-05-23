@@ -127,7 +127,6 @@ export const getAllProposals = async (req, res) => {
     const proposals = await Proposal.find(query)
       .populate("student", "fullName email department")
       .populate("teacher", "fullName email department")
-      .populate("submissionDetails.submittedTo", "fullName email department")
       .sort({ createdAt: -1 });
 
     res.status(200).json({

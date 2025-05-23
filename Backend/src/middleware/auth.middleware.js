@@ -1,34 +1,19 @@
-import jwt from "jsonwebtoken"
-import User from "../models/user.model.js"
+import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 
-export const protectRoute = async(req,res,next) => {
+export const protectRoute = async (req, res, next) => {
     try {
-        // Get token from Authorization header
         const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({ 
                 success: false,
                 message: "Unauthorized - No Token Provided" 
             });
         }
 
-        const token = authHeader.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ 
-                success: false,
-                message: "Unauthorized - No Token Provided" 
-            });
-        }
-
+        const token = authHeader.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decoded) {
-            return res.status(401).json({ 
-                success: false,
-                message: "Unauthorized - Invalid Token" 
-            });
-        }
 
-        // Set user info directly from token
         req.user = {
             _id: decoded.userId,
             email: decoded.email,
@@ -42,14 +27,22 @@ export const protectRoute = async(req,res,next) => {
             imageUrl: decoded.imageUrl,
             socialLinks: decoded.socialLinks,
             skills: decoded.skills
-        }
-        
-        next()
+        };
+
+        next();
     } catch (error) {
-        console.log(`Error in protectRoute middleware: ${error.message}`)
-        res.status(401).json({ 
-            success: false,
+        if (error.name === "TokenExpiredError") {
+            console.log("JWT expired:", error.message);
+            return res.status(401).json({ 
+                success: false, 
+                message: "Unauthorized - Token Expired" 
+            });
+        }
+
+        console.log(`Error in protectRoute middleware: ${error.message}`);
+        return res.status(401).json({ 
+            success: false, 
             message: "Unauthorized - Invalid Token" 
-        })
+        });
     }
-}
+};
