@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,11 +8,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
 import Login from "../auth-component/signin";
-import { ThemeToggle } from "../layout/theme-toggler";
 
 export default function Navbar() {
+  const router = useRouter();
+  const { data: user, isLoading } = useGetUserQuery();
+  const [logout] = useLogoutMutation();
+  const token = Cookies.get('access_token')
+  
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      Cookies.remove('access_token');
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <header className="border-b bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
@@ -71,10 +86,9 @@ export default function Navbar() {
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
-            <ThemeToggle />
             <Popover>
               <PopoverTrigger asChild>
-                <Button className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-gray-700">
+                <Button className="bg-white text-blue-600 border border-blue-600 hover:bg-blue-50">
                   Login
                 </Button>
               </PopoverTrigger>

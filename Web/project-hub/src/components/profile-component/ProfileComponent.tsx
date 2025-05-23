@@ -8,7 +8,7 @@ import { UserType } from "@/type/profile";
 const ProfileComponent = () => {
   const {data} = useGetUserQuery()
   const profileData = data as UserType;
-  console.log("profileData", profileData);
+  // console.log("profileData", profileData);
 
   return (
     <>
