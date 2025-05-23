@@ -12,7 +12,7 @@ const feedbackSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Completed'],
+    enum: ['Pending', 'Approved', 'Rejected', 'Needs Revision'],
     default: 'Pending'
   },
   sections: [{

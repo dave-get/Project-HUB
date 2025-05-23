@@ -13,7 +13,7 @@ const projectFeedbackSchema = new mongoose.Schema({
   feedbackType: [{ type: String }], // Array of strings for feedback categories (e.g., "UI/UX", "Functionality")
   feedbackText: { type: String, required: true }, // The main feedback text
   attachments: [feedbackAttachmentSchema], // Array of attachment objects
-  status: { type: String, default: 'Pending', enum: ['Pending', 'In Progress', 'Addressed'] }, // Status of the feedback
+  status: { type: String, default: 'pending', enum: ['pending', 'aproved', 'rejected'] }, // Status of the feedback
 }, {
   timestamps: true // Adds createdAt and updatedAt timestamps
 });
