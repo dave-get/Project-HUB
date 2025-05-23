@@ -11,7 +11,7 @@ export const profileApi = createApi({
   endpoints: (builder) => ({
     getUser: builder.query<UserType, void>({
       query: () => ({
-        url: USER_ROUTES.BASE,
+        url: PROFILE_ROUTES.BASE,
         method: "GET",
         token: Cookies.get("access_token"),
       }),

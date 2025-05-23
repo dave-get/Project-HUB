@@ -30,10 +30,8 @@ interface ProfileResponse {
 
 const ProfileComponent = () => {
   const {data} = useGetUserQuery()
-  const profileData = (data as unknown) as ProfileResponse;
-  
-  console.log("Full profile data:", profileData);
-  console.log("Social links data:", profileData?.data?.socialLinks);
+  const profileData = data as UserType;
+  // console.log("profileData", profileData);
 
   return (
     <>
