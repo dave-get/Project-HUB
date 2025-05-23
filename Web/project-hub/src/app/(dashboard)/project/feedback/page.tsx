@@ -1,9 +1,9 @@
-import React from 'react'
+import FeedbackForm from "@/components/project-feedback-component/ProjectFeedback"
 
-const page = () => {
+export default function Home() {
   return (
-    <div>Feedback</div>
+    <main className="container mx-auto py-6 max-w-4xl">
+      <FeedbackForm />
+    </main>
   )
 }
-
-export default page
