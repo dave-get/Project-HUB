@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/lib/baseQuery";
 import Cookies from "js-cookie";
-import { PROFILE_ROUTES, USER_ROUTES } from "@/config/api.config";
+import {  USER_ROUTES } from "@/config/api.config";
 import { UserType, profileType } from "@/type/profile";
 
 export const profileApi = createApi({
@@ -11,7 +11,7 @@ export const profileApi = createApi({
   endpoints: (builder) => ({
     getUser: builder.query<UserType, void>({
       query: () => ({
-        url: PROFILE_ROUTES.BASE,
+        url: USER_ROUTES.BASE,
         method: "GET",
         token: Cookies.get("access_token"),
       }),
