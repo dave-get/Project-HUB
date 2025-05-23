@@ -1,4 +1,5 @@
 export type profileType = {
+  _id: string;
   email: string;
   password: string;
   fullName: string;

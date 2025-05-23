@@ -14,8 +14,26 @@ import {
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useGetUserQuery } from "@/features/profileApi/profileApi";
+import { useLogoutMutation } from "@/features/auth/authApi";
+import Cookies from 'js-cookie';
 
 const Header = () => {
+  const router = useRouter();
+  const { data: user, isLoading } = useGetUserQuery();
+  const [logout] = useLogoutMutation();
+  const token = Cookies.get('access_token')
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      Cookies.remove('access_token');
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   return (
     <header className="flex justify-between h-16 shrink-0 items-center gap-2 border-b px-4 bg-background">
       <SidebarTrigger className="-ml-1" />
@@ -50,7 +68,7 @@ const Header = () => {
             <DropdownMenuItem asChild>
               <Link href="/settings" className="text-foreground">Settings</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-foreground">Log out</DropdownMenuItem>
+            <DropdownMenuItem className="text-foreground" onClick={handleLogout}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

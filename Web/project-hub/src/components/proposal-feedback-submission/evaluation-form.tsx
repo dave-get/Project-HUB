@@ -19,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import StarRating from "./star-rating";
 import { toast } from "sonner";
+import { useGetProposalsQuery } from "@/features/proposalsApi/proposalsApi";
+import { SubmissionResponse } from "@/type/proposal";
 
 const DEFAULT_SECTIONS = [
   {
@@ -59,6 +61,9 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
   const [createFeedback, { isLoading }] = useCreateFeedbackMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const { data } = useGetProposalsQuery();
+  const proposals = data as SubmissionResponse
+  const proposal = proposals?.data?.find((proposal) => proposal._id === proposalId);
 
   const {
     register,
@@ -177,20 +182,21 @@ const EvaluationForm = ({ proposalId }: EvaluationFormProps) => {
       <Card className="mb-6">
         <CardHeader className="border-b">
           <CardTitle className="text-lg">
-            <Input
-              {...register("projectTitle")}
-              className="text-lg font-semibold border-none p-0"
-            />
+            {proposal?.title}
           </CardTitle>
           <div className="text-sm text-muted-foreground">
             <span>Proposal ID: {watch("proposalId")}</span> •{" "}
-            <span>Submitted: 2025-05-15</span>
+            <span>
+              {proposal?.createdAt
+                ? new Date(proposal.createdAt).toLocaleString()
+                : "N/A"}
+            </span>
           </div>
         </CardHeader>
         <CardContent className="pt-4 pb-2">
           <div className="flex justify-between text-sm">
-            <span>Primary Investigator: Dr. Jane Smith</span>
-            <span>Department: Medical Informatics</span>
+            <span>Submitter: {proposal?.student?.fullName}</span>
+            <span>Department: {proposal?.student?.department}</span>
           </div>
         </CardContent>
       </Card>
