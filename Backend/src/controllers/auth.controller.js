@@ -218,6 +218,10 @@ export const getProfile = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
+      bio: user.bio,
+      phone: user.phone,
+      location: user.location,
+      socialLinks: user.socialLinks || [],
       imageUrl: user.imageUrl || "default-profile.jpg",
     };
 
