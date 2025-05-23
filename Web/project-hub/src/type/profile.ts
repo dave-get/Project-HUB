@@ -8,7 +8,7 @@ export type profileType = {
   bio: string;
   phone: string;
   location: string;
-  imageUrl: string; // Added image field
+  imageUrl: string;
   socialLinks: {
     linkedin: string;
     github: string;
