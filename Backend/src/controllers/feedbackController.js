@@ -8,7 +8,7 @@ import User from '../models/user.model.js';
 export const addFeedback = async (req, res) => {
   try {
     const { proposalId } = req.params;
-    const { projectTitle, sections, attachments } = req.body;
+    const { projectTitle, sections, attachments, status } = req.body;
 
     // Validate required fields
     if (!projectTitle || !sections || !sections.length) {
@@ -16,6 +16,17 @@ export const addFeedback = async (req, res) => {
         success: false,
         message: 'Project title and at least one section are required'
       });
+    }
+
+    // Validate status if provided
+    if (status) {
+      const validStatuses = ['Pending', 'Approved', 'Rejected', 'Needs Revision'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status. Must be one of: Pending, Approved, Rejected, Needs Revision'
+        });
+      }
     }
 
     // Find the proposal
@@ -39,7 +50,7 @@ export const addFeedback = async (req, res) => {
     const newFeedback = {
       teacher: req.user._id,
       projectTitle,
-      status: 'Pending',
+      status: status || 'Pending',
       sections,
       attachments: attachments || []
     };
@@ -99,7 +110,7 @@ export const updateFeedback = async (req, res) => {
     const { proposalId, feedbackIndex } = req.params;
     const { projectTitle, sections, attachments, status } = req.body;
 
-    const proposal = await Proposal.findOne({ id: proposalId });
+    const proposal = await Proposal.findOne({ _id: proposalId });
     if (!proposal) {
       return res.status(404).json({
         success: false,
@@ -115,6 +126,24 @@ export const updateFeedback = async (req, res) => {
       });
     }
 
+    // Verify the user is the teacher who created the feedback
+    if (proposal.feedbackList[feedbackIndex].teacher.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only update your own feedback'
+      });
+    }
+
+    // Validate status if provided
+    if (status) {
+      const validStatuses = ['Pending', 'Approved', 'Rejected', 'Needs Revision'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status. Must be one of: Pending, Approved, Rejected, Needs Revision'
+        });
+      }
+    }
 
     // Update feedback
     if (projectTitle) proposal.feedbackList[feedbackIndex].projectTitle = projectTitle;
