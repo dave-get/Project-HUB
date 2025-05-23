@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CheckCircle2, Plus, Save, Trash2, Upload } from "lucide-react"
 import { useState } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function ProjectSubmissionPage() {
   const [toolModalOpen, setToolModalOpen] = useState(false)
@@ -50,9 +50,15 @@ export default function ProjectSubmissionPage() {
                   <h3 className="font-medium">The Team</h3>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <input type="checkbox" className="h-3 w-3" />
-                  <span>I'm not this project's author</span>
-                </div>
+                    <input
+                        type="checkbox"
+                        id="notAuthorCheckbox"
+                        className="h-3 w-3"
+                    />
+                    <label htmlFor="notAuthorCheckbox" className="cursor-pointer">
+                        I'm not this project's author
+                    </label>
+                    </div>
               </div>
 
               <div className="flex items-center gap-2 mb-4">
@@ -78,9 +84,15 @@ export default function ProjectSubmissionPage() {
                   <h3 className="font-medium">Tools and machines</h3>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <input type="checkbox" className="h-3 w-3" />
-                  <span>No tools used in this project</span>
-                </div>
+                    <input 
+                        type="checkbox" 
+                        id="noToolsUsed" 
+                        className="h-3 w-3" 
+                    />
+                    <label htmlFor="noToolsUsed">
+                        No tools used in this project
+                    </label>
+                    </div>
               </div>
               <div className="flex justify-center py-6">
                 <Button
@@ -178,13 +190,16 @@ export default function ProjectSubmissionPage() {
         </div>
       </div>
 
-      {/* Tool Modal */}
+      {/* Tool Modal - Fixed with proper accessibility */}
       <Dialog open={toolModalOpen} onOpenChange={setToolModalOpen}>
         <DialogContent className="sm:max-w-md p-0">
+          <DialogHeader className="border-b px-6 py-4">
+            <DialogTitle className="text-lg font-medium">Add New Tool</DialogTitle>
+          </DialogHeader>
           <div className="p-6">
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <Button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-1 text-sm rounded-md">TOOL</Button>
-            </div>
+            </div> */}
 
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Tool Name</label>
