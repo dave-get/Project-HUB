@@ -1,9 +1,11 @@
 "use client";
-import { Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { useGetUserQuery } from "@/features/profileApi/profileApi";
 
 const SidebarProfile = () => {
+  const { data: user, isLoading } = useGetUserQuery();
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -49,14 +51,14 @@ const SidebarProfile = () => {
           href="/profile"
         >
           <Avatar className="h-10 w-10 border-2 border-green-500">
-            <AvatarImage src="/" alt="Dawit Getachew" />
-            <AvatarFallback>D</AvatarFallback>
+            <AvatarImage src={user?.data?.imageUrl} alt="Dawit Getachew" />
+            <AvatarFallback>{user?.data?.fullName[0]}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <span className="font-medium text-sidebar-foreground">
-              Dawit Getachew
+              {user?.data?.fullName}
             </span>
-            <span className="text-sm text-secondary-foreground">student</span>
+            <span className="text-sm text-secondary-foreground">{user?.data?.role}</span>
           </div>
         </Link>
       </div>
