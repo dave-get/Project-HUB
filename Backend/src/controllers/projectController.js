@@ -53,7 +53,7 @@ export const getProject = async (req, res) => {
 // Create project
 export const createProject = async (req, res) => {
   try {
-    const { title, elevatorPitch, collaborators, componentsAndSupplies, toolsAndMachines, appsAndPlatforms, projectDescription, code, downloadableFiles, documentation, noToolsUsed, noFilesToAdd } = req.body;
+    const { title, elevatorPitch, collaborators, componentsAndSupplies, toolsAndMachines, appsAndPlatforms, projectDescription, code, documentation, noToolsUsed } = req.body;
     const files = req.files; // Files uploaded by Multer
 
     // Check if a project with the same title already exists
@@ -103,46 +103,66 @@ export const createProject = async (req, res) => {
     }
     // console.log('Processed collaborators array after mapping (promises not yet resolved):', processedCollaborators);
 
-    // Process components and supplies
-    let processedComponents = safeParseJSON(componentsAndSupplies) || [];
-    if (Array.isArray(processedComponents)) {
-      processedComponents = processedComponents.map((item, index) => {
-        const componentImageFile = files && files.componentImages && files.componentImages[index];
-        if (componentImageFile) {
-          const uploadPromise = uploadToCloudinary(componentImageFile, { folder: 'project_components' }).then(result => {
-            item.image = result.secure_url;
+    // Process app logos
+    let processedApps = safeParseJSON(appsAndPlatforms) || [];
+    if (Array.isArray(processedApps)) {
+      processedApps = processedApps.map((app, index) => {
+        const appLogoFile = files && files.appLogos && files.appLogos[index];
+        if (appLogoFile) {
+          const uploadPromise = uploadToCloudinary(appLogoFile, { folder: 'project_apps' }).then(result => {
+            app.logo = result.secure_url;
           }).catch(error => {
-            console.error('Cloudinary upload error for component image:', error);
-            item.image = null;
+            console.error('Cloudinary upload error for app logo:', error);
+            app.logo = null;
           });
           uploadPromises.push(uploadPromise);
         }
-        return item;
+        return app;
       });
     }
-     // console.log('Processed components array after mapping (promises not yet resolved):', processedComponents);
 
-    // Process downloadable files
-    let processedDownloadableFiles = safeParseJSON(downloadableFiles) || [];
-    if (Array.isArray(processedDownloadableFiles)) {
-      processedDownloadableFiles = processedDownloadableFiles.map((fileItem, index) => {
-        const downloadableFile = files && files.downloadableFiles && files.downloadableFiles[index];
-        if (downloadableFile) {
-          const uploadPromise = uploadToCloudinary(downloadableFile, { folder: 'project_downloads', resource_type: 'raw' }).then(result => {
-            fileItem.value = result.secure_url;
-          }).catch(error => {
-            console.error('Cloudinary upload error for downloadable file:', error);
-            fileItem.value = null;
+    // Process tool images when noToolsUsed is false
+    let processedTools = [];
+    if (!noToolsUsed) {
+      const toolsData = safeParseJSON(toolsAndMachines) || { noToolsUsed: false, tools: [] };
+      if (Array.isArray(toolsData.tools)) {
+        processedTools = toolsData.tools.map((tool, index) => {
+          const toolImageFile = files && files.toolImages && files.toolImages[index];
+          if (toolImageFile) {
+            const uploadPromise = uploadToCloudinary(toolImageFile, { folder: 'project_tools' }).then(result => {
+              tool.image = result.secure_url;
+            }).catch(error => {
+              console.error('Cloudinary upload error for tool image:', error);
+              tool.image = null;
+            });
+            uploadPromises.push(uploadPromise);
+          }
+          return tool;
+        });
+      }
+    }
+
+    // Process documentation files
+    let processedDocumentation = safeParseJSON(documentation) || [];
+    if (Array.isArray(processedDocumentation)) {
+      processedDocumentation = processedDocumentation.map((docItem, index) => {
+        const docFile = files && files.documentationFiles && files.documentationFiles[index];
+        if (docFile) {
+          const uploadPromise = uploadToCloudinary(docFile, { folder: 'project_documentation', resource_type: 'raw' }).then(result => ({
+            fileName: docFile.originalname,
+            fileSize: result.bytes,
+            fileUrl: result.secure_url
+          })).catch(error => {
+            console.error('Cloudinary upload error for documentation file:', error);
+            return null;
           });
           uploadPromises.push(uploadPromise);
         }
-        return fileItem;
+        return docItem;
       });
     }
-    // console.log('Processed downloadable files array after mapping (promises not yet resolved):', processedDownloadableFiles);
 
     // Wait for ALL Cloudinary uploads to complete
-    // console.log('Waiting for all upload promises to resolve...');
     await Promise.all(uploadPromises);
 
     // Upload cover image (this was already awaited correctly)
@@ -156,17 +176,20 @@ export const createProject = async (req, res) => {
       title,
       elevatorPitch,
       coverImage,
-      collaborators: processedCollaborators, // This should now have updated image URLs after awaiting promises
-      componentsAndSupplies: processedComponents, // This should now have updated image URLs
-      toolsAndMachines: safeParseJSON(toolsAndMachines) || [],
-      appsAndPlatforms: safeParseJSON(appsAndPlatforms) || [],
-      projectDescriptionFull,
+      teamMembers: processedCollaborators,
+      toolsAndMachines: noToolsUsed 
+        ? { noToolsUsed: true, tools: [] } 
+        : { noToolsUsed: false, tools: processedTools },
+      appsAndPlatforms: processedApps,
+      projectDescription,
       code: safeParseJSON(code) || [],
       documentation: processedDocumentation,
       noToolsUsed,
     });
 
     const savedProject = await project.save();
+    // console.log('Saved project:', savedProject);
+    res.status(201).json({ project: savedProject });
     // console.log('Saved project:', savedProject);
     res.status(201).json({ project: savedProject });
   } catch (error) {
@@ -248,6 +271,26 @@ export const updateProject = async (req, res) => {
       });
   }
 
+  // Process documentation files
+  let processedDocumentation = safeParseJSON(documentation) || [];
+  if (Array.isArray(processedDocumentation)) {
+    processedDocumentation = processedDocumentation.map((docItem, index) => {
+      const docFile = files && files.documentationFiles && files.documentationFiles[index];
+      if (docFile) {
+        const uploadPromise = uploadToCloudinary(docFile, { folder: 'project_documentation', resource_type: 'raw' }).then(result => ({
+          fileName: docFile.originalname,
+          fileSize: result.bytes,
+          fileUrl: result.secure_url
+        })).catch(error => {
+          console.error('Cloudinary upload error for documentation file:', error);
+          return null;
+        });
+        uploadPromises.push(uploadPromise);
+      }
+      return docItem;
+    });
+  }
+
   // Wait for ALL Cloudinary uploads to complete before updating the project
   await Promise.all(uploadPromises);
 
@@ -257,15 +300,12 @@ export const updateProject = async (req, res) => {
       coverImage: coverImage, // Use the uploaded file path/URL here
       // category: req.body.category, // If category is still needed
       collaborators: processedCollaborators, // Use processed team data with image URLs
-      componentsAndSupplies: processedComponents, // Use processed components data with image URLs
       toolsAndMachines: safeParseJSON(toolsAndMachines) || [], // Assuming similar processing needed here
       appsAndPlatforms: safeParseJSON(appsAndPlatforms) || [], // Assuming similar processing needed here
       projectDescriptionFull: projectDescriptionFull,
       code: safeParseJSON(code) || [],
-      downloadableFiles: processedDownloadableFiles, // Use processed downloadable files data with URLs
-      documentation: safeParseJSON(documentation) || [],
+      documentation: processedDocumentation,
       noToolsUsed,
-      noFilesToAdd,
       status,
       reviewedByTeacherId,
     };
