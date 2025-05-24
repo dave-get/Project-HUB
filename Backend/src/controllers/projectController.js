@@ -10,11 +10,9 @@ const upload = multer({ storage: storage });
 // Middleware to handle multiple file uploads for project creation/update
 export const uploadProjectFiles = upload.fields([
   { name: 'coverImage', maxCount: 1 },
-  { name: 'teamImages', maxCount: 10 }, // Adjust maxCount as needed
-  { name: 'componentImages', maxCount: 20 }, // Adjust maxCount as needed
-  { name: 'toolImages', maxCount: 20 }, // Adjust maxCount as needed
-  { name: 'appImages', maxCount: 20 }, // Adjust maxCount as needed
-  { name: 'downloadableFiles', maxCount: 50 }, // Adjust maxCount as needed
+  { name: 'toolImages', maxCount: 20 },
+  { name: 'appLogos', maxCount: 20 },
+  { name: 'documentationFiles', maxCount: 1 }
 ]);
 
 // Helper function to upload files to Cloudinary
@@ -55,7 +53,7 @@ export const getProject = async (req, res) => {
 // Create project
 export const createProject = async (req, res) => {
   try {
-    const { title, description, collaborators, componentsAndSupplies, toolsAndMachines, appsAndPlatforms, projectDescriptionFull, code, downloadableFiles, documentation, noToolsUsed, noFilesToAdd } = req.body;
+    const { title, elevatorPitch, collaborators, componentsAndSupplies, toolsAndMachines, appsAndPlatforms, projectDescription, code, downloadableFiles, documentation, noToolsUsed, noFilesToAdd } = req.body;
     const files = req.files; // Files uploaded by Multer
 
     // Check if a project with the same title already exists
@@ -141,15 +139,33 @@ export const createProject = async (req, res) => {
         return fileItem;
       });
     }
-    // console.log('Processed downloadable files array after mapping (promises not yet resolved):', processedDownloadableFiles);
 
-    // Wait for ALL Cloudinary uploads to complete
-    // console.log('Waiting for all upload promises to resolve...');
+    // Process documentation files
+    let processedDocumentation = safeParseJSON(documentation) || [];
+    if (Array.isArray(processedDocumentation)) {
+      processedDocumentation = processedDocumentation.map((docItem, index) => {
+        const docFile = files && files.documentationFiles && files.documentationFiles[index];
+        if (docFile) {
+          const uploadPromise = uploadToCloudinary(docFile, { 
+            folder: 'project_documentation',
+            resource_type: 'raw'
+          }).then(result => {
+            docItem.fileUrl = result.secure_url;
+            docItem.fileSize = result.bytes;
+            docItem.fileName = result.original_filename;
+          }).catch(error => {
+            console.error('Cloudinary upload error for documentation file:', error);
+            docItem.fileUrl = null;
+            docItem.fileSize = null;
+            docItem.fileName = null;
+          });
+          uploadPromises.push(uploadPromise);
+        }
+        return docItem;
+      });
+    }
+
     await Promise.all(uploadPromises);
-    // console.log('All upload promises resolved.');
-    // console.log('Processed collaborators array after awaiting uploads:', processedCollaborators);
-    // console.log('Processed components array after awaiting uploads:', processedComponents);
-    // console.log('Processed downloadable files array after awaiting uploads:', processedDownloadableFiles);
 
     // Upload cover image (this was already awaited correctly)
     let coverImage = undefined;
@@ -160,24 +176,61 @@ export const createProject = async (req, res) => {
 
     const project = new Project({
       title,
-      description,
+      elevatorPitch,
       coverImage,
-      collaborators: processedCollaborators, // This should now have updated image URLs after awaiting promises
-      componentsAndSupplies: processedComponents, // This should now have updated image URLs
+      collaborators: processedCollaborators,
       toolsAndMachines: safeParseJSON(toolsAndMachines) || [],
       appsAndPlatforms: safeParseJSON(appsAndPlatforms) || [],
-      projectDescriptionFull,
+      projectDescription,
       code: safeParseJSON(code) || [],
-      downloadableFiles: processedDownloadableFiles, // This should now have updated file URLs
-      documentation: safeParseJSON(documentation) || [],
+      documentation: processedDocumentation,
       noToolsUsed,
-      noFilesToAdd,
     });
 
-    // console.log('Project being saved:', project);
     const savedProject = await project.save();
-    // console.log('Saved project:', savedProject);
-    res.status(201).json({ project: savedProject });
+
+    // Transform the saved project into the new format
+    const transformedProject = {
+      project: {
+        title: savedProject.title || "",
+        tags: [],
+        coverImage: savedProject.coverImage || null,
+        elevatorPitch: savedProject.elevatorPitch || "",
+        projectDescription: savedProject.projectDescription || "",
+        teamMembers: (savedProject.collaborators || []).map(member => ({
+          id: member._id?.toString() || "",
+          name: member.name || "",
+          role: member.role || ""
+        })),
+        toolsAndMachines: {
+          noToolsUsed: savedProject.toolsAndMachines?.noToolsUsed || false,
+          tools: (savedProject.toolsAndMachines?.tools || []).map(tool => ({
+            name: tool.name || "",
+            description: tool.description || "",
+            image: tool.image || null
+          }))
+        },
+        appsAndPlatforms: (savedProject.appsAndPlatforms || []).map(app => ({
+          title: app.title || "",
+          description: app.description || "",
+          logo: app.logo || null
+        })),
+        codeAndDocumentation: {
+          repositoryLink: (savedProject.code || []).find(item => item.type === 'repository')?.link || "",
+          documentation: savedProject.documentation?.length > 0 ? {
+            fileName: savedProject.documentation[0].fileName || "",
+            fileSize: savedProject.documentation[0].fileSize || "",
+            fileUrl: savedProject.documentation[0].fileUrl || null
+          } : {
+            fileName: "",
+            fileSize: "",
+            fileUrl: null
+          }
+        }
+      }
+    };
+
+    res.status(201).json(transformedProject);
   } catch (error) {
     console.error('Error creating project:', error);
     res.status(400).json({ message: error.message });
