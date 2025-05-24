@@ -26,15 +26,20 @@ const uploadToCloudinary = async (file, options = {}) => {
 // Create new project feedback
 export const createProjectFeedback = async (req, res) => {
   try {
-    const { projectId, userId, rating, feedbackType, feedbackText } = req.body; // Get text fields from body
-    const files = req.files; // Get uploaded files from Multer
+    const { projectId, teacherId, collaboratorsId, rating, feedbackType, feedbackText, status } = req.body;
+    const files = req.files;
 
+    // Validate status if provided
+    if (status && !['pending', 'approved', 'rejected', 'need review'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
 
     // Upload attachments to Cloudinary
     const attachmentUploadPromises = files ? files.map(file =>
       uploadToCloudinary(file, { folder: 'feedback_attachments' }).then(result => ({
         name: file.originalname,
         url: result.secure_url,
+        size: result.bytes
       }))
     ) : [];
 
@@ -43,24 +48,33 @@ export const createProjectFeedback = async (req, res) => {
     // Create new feedback document
     const newFeedback = new ProjectFeedback({
       projectId,
-      userId,
+      teacherId,
+      collaboratorsId: Array.isArray(collaboratorsId) ? collaboratorsId : [collaboratorsId].filter(Boolean),
       rating,
-      feedbackType: Array.isArray(feedbackType) ? feedbackType : [feedbackType].filter(Boolean), // Handle single or multiple types
+      feedbackType: Array.isArray(feedbackType) ? feedbackType : [feedbackType].filter(Boolean),
       feedbackText,
       attachments: uploadedAttachments,
-      status: 'Addressed', // Set status to Addressed upon creation as requested
+      status: status || 'pending'
     });
 
     const savedFeedback = await newFeedback.save();
 
-    // After saving feedback, find the related project and update its status
+    // Update project status based on feedback status
+    const projectStatus = status === 'approved' ? true : false;
     const updatedProject = await Project.findByIdAndUpdate(
       projectId,
-      { status: true, reviewedByTeacherId: userId }, // Set status to true (Addressed) and assign reviewer
-      { new: true } // Return the updated project document
+      { 
+        status: projectStatus, 
+        reviewedByTeacherId: teacherId 
+      },
+      { new: true }
     );
 
-    res.status(201).json({ message: 'Feedback submitted successfully!', feedback: savedFeedback, projectStatus: updatedProject?.status });
+    res.status(201).json({ 
+      message: 'Feedback submitted successfully!', 
+      feedback: savedFeedback, 
+      projectStatus: updatedProject?.status 
+    });
 
   } catch (error) {
     console.error('Error submitting project feedback:', error);
@@ -68,12 +82,53 @@ export const createProjectFeedback = async (req, res) => {
   }
 };
 
+// Update feedback status
+export const updateFeedbackStatus = async (req, res) => {
+  try {
+    const { feedbackId } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'approved', 'rejected', 'need review'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const feedback = await ProjectFeedback.findById(feedbackId);
+    if (!feedback) {
+      return res.status(404).json({ message: 'Feedback not found' });
+    }
+
+    feedback.status = status;
+    const updatedFeedback = await feedback.save();
+
+    // Update project status based on feedback status
+    const projectStatus = status === 'approved' ? true : false;
+    await Project.findByIdAndUpdate(
+      feedback.projectId,
+      { 
+        status: projectStatus, 
+        reviewedByTeacherId: feedback.teacherId 
+      }
+    );
+
+    res.json({ 
+      message: 'Feedback status updated successfully', 
+      feedback: updatedFeedback 
+    });
+
+  } catch (error) {
+    console.error('Error updating feedback status:', error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // Get feedback for a specific project
 export const getProjectFeedback = async (req, res) => {
   try {
-    const projectId = req.params.projectId; // Assuming project ID is in URL params
+    const projectId = req.params.projectId;
 
-    const feedback = await ProjectFeedback.find({ projectId }).populate('userId'); // Populate user details
+    const feedback = await ProjectFeedback.find({ projectId })
+      .populate('teacherId', 'fullName email')
+      .populate('collaboratorsId', 'fullName email');
 
     res.json({ feedback });
 
