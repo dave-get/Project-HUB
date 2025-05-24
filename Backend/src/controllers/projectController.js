@@ -165,6 +165,50 @@ export const createProject = async (req, res) => {
       });
     }
 
+    // Process tools and their images
+    let processedToolsAndMachines = safeParseJSON(toolsAndMachines) || { noToolsUsed: false, tools: [] };
+    if (Array.isArray(processedToolsAndMachines.tools)) {
+      processedToolsAndMachines.tools = await Promise.all(
+        processedToolsAndMachines.tools.map(async (tool, index) => {
+          const toolImage = files?.toolImages?.[index];
+          if (toolImage) {
+            const result = await uploadToCloudinary(toolImage, { folder: 'project_tools' });
+            tool.image = result.secure_url;
+          }
+          return tool;
+        })
+      );
+    }
+
+    // Process apps and their logos
+    let processedAppsAndPlatforms = safeParseJSON(appsAndPlatforms) || [];
+    if (Array.isArray(processedAppsAndPlatforms)) {
+      processedAppsAndPlatforms = await Promise.all(
+        processedAppsAndPlatforms.map(async (app, index) => {
+          const appLogo = files?.appLogos?.[index];
+          if (appLogo) {
+            const result = await uploadToCloudinary(appLogo, { folder: 'project_apps' });
+            app.logo = result.secure_url;
+          }
+          return app;
+        })
+      );
+    }
+
+    // Process documentation file
+    let processedDocumentationFile = { fileName: "", fileSize: "", fileUrl: null };
+    if (files?.documentationFiles?.[0]) {
+      const result = await uploadToCloudinary(files.documentationFiles[0], { 
+        folder: 'project_documentation',
+        resource_type: 'raw'
+      });
+      processedDocumentationFile = {
+        fileName: result.original_filename,
+        fileSize: result.bytes.toString(),
+        fileUrl: result.secure_url
+      };
+    }
+
     await Promise.all(uploadPromises);
 
     // Upload cover image (this was already awaited correctly)
@@ -179,8 +223,8 @@ export const createProject = async (req, res) => {
       elevatorPitch,
       coverImage,
       collaborators: processedCollaborators,
-      toolsAndMachines: safeParseJSON(toolsAndMachines) || [],
-      appsAndPlatforms: safeParseJSON(appsAndPlatforms) || [],
+      toolsAndMachines: processedToolsAndMachines,
+      appsAndPlatforms: processedAppsAndPlatforms,
       projectDescription,
       code: safeParseJSON(code) || [],
       documentation: processedDocumentation,
@@ -217,15 +261,7 @@ export const createProject = async (req, res) => {
         })),
         codeAndDocumentation: {
           repositoryLink: (savedProject.code || []).find(item => item.type === 'repository')?.link || "",
-          documentation: savedProject.documentation?.length > 0 ? {
-            fileName: savedProject.documentation[0].fileName || "",
-            fileSize: savedProject.documentation[0].fileSize || "",
-            fileUrl: savedProject.documentation[0].fileUrl || null
-          } : {
-            fileName: "",
-            fileSize: "",
-            fileUrl: null
-          }
+          documentation: processedDocumentationFile
         }
       }
     };
