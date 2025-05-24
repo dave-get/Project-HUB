@@ -139,32 +139,10 @@ export const createProject = async (req, res) => {
         return fileItem;
       });
     }
+    // console.log('Processed downloadable files array after mapping (promises not yet resolved):', processedDownloadableFiles);
 
-    // Process documentation files
-    let processedDocumentation = safeParseJSON(documentation) || [];
-    if (Array.isArray(processedDocumentation)) {
-      processedDocumentation = processedDocumentation.map((docItem, index) => {
-        const docFile = files && files.documentationFiles && files.documentationFiles[index];
-        if (docFile) {
-          const uploadPromise = uploadToCloudinary(docFile, { 
-            folder: 'project_documentation',
-            resource_type: 'raw'
-          }).then(result => {
-            docItem.fileUrl = result.secure_url;
-            docItem.fileSize = result.bytes;
-            docItem.fileName = result.original_filename;
-          }).catch(error => {
-            console.error('Cloudinary upload error for documentation file:', error);
-            docItem.fileUrl = null;
-            docItem.fileSize = null;
-            docItem.fileName = null;
-          });
-          uploadPromises.push(uploadPromise);
-        }
-        return docItem;
-      });
-    }
-
+    // Wait for ALL Cloudinary uploads to complete
+    // console.log('Waiting for all upload promises to resolve...');
     await Promise.all(uploadPromises);
 
     // Upload cover image (this was already awaited correctly)
@@ -178,59 +156,19 @@ export const createProject = async (req, res) => {
       title,
       elevatorPitch,
       coverImage,
-      collaborators: processedCollaborators,
+      collaborators: processedCollaborators, // This should now have updated image URLs after awaiting promises
+      componentsAndSupplies: processedComponents, // This should now have updated image URLs
       toolsAndMachines: safeParseJSON(toolsAndMachines) || [],
       appsAndPlatforms: safeParseJSON(appsAndPlatforms) || [],
-      projectDescription,
+      projectDescriptionFull,
       code: safeParseJSON(code) || [],
       documentation: processedDocumentation,
       noToolsUsed,
     });
 
     const savedProject = await project.save();
-
-    // Transform the saved project into the new format
-    const transformedProject = {
-      project: {
-        title: savedProject.title || "",
-        tags: [],
-        coverImage: savedProject.coverImage || null,
-        elevatorPitch: savedProject.elevatorPitch || "",
-        projectDescription: savedProject.projectDescription || "",
-        teamMembers: (savedProject.collaborators || []).map(member => ({
-          id: member._id?.toString() || "",
-          name: member.name || "",
-          role: member.role || ""
-        })),
-        toolsAndMachines: {
-          noToolsUsed: savedProject.toolsAndMachines?.noToolsUsed || false,
-          tools: (savedProject.toolsAndMachines?.tools || []).map(tool => ({
-            name: tool.name || "",
-            description: tool.description || "",
-            image: tool.image || null
-          }))
-        },
-        appsAndPlatforms: (savedProject.appsAndPlatforms || []).map(app => ({
-          title: app.title || "",
-          description: app.description || "",
-          logo: app.logo || null
-        })),
-        codeAndDocumentation: {
-          repositoryLink: (savedProject.code || []).find(item => item.type === 'repository')?.link || "",
-          documentation: savedProject.documentation?.length > 0 ? {
-            fileName: savedProject.documentation[0].fileName || "",
-            fileSize: savedProject.documentation[0].fileSize || "",
-            fileUrl: savedProject.documentation[0].fileUrl || null
-          } : {
-            fileName: "",
-            fileSize: "",
-            fileUrl: null
-          }
-        }
-      }
-    };
-
-    res.status(201).json(transformedProject);
+    // console.log('Saved project:', savedProject);
+    res.status(201).json({ project: savedProject });
   } catch (error) {
     console.error('Error creating project:', error);
     res.status(400).json({ message: error.message });
