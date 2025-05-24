@@ -11,13 +11,15 @@ import {
   uploadProjectFiles,
   updateProjectStatus
 } from '../controllers/projectController.js';
+import { protectRoute } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
+router.use(protectRoute);
 // Project routes
 router.get('/', getProjects);
 router.get('/:id', getProject);
-router.post('/', uploadProjectFiles, createProject);
+router.post('/create', uploadProjectFiles, createProject);
 router.put('/:id', uploadProjectFiles, updateProject);
 router.delete('/:id', deleteProject);
 

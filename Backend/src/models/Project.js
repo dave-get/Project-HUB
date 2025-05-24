@@ -1,59 +1,72 @@
 import mongoose from 'mongoose';
 
-// Schema for items with name, image, and description (e.g., Components, Tools, Apps, Collaborators)
-const detailItemSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  image: { type: String }, // Optional image URL/path
-  description: { type: String } // Optional description
-});
-
-// Schema for items that are links, embeds, or files (e.g., Code, Downloadable Files, Documentation)
-const linkItemSchema = new mongoose.Schema({
-  name: { type: String }, // Optional name or title
-  value: { type: String, required: true } // The link, embed code, file path, etc.
-});
-
-// Schema for individual comments
+// Schema for comments
 const commentSchema = new mongoose.Schema({
-  commenterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Assuming a User model exists
-  name: { type: String, required: true }, // Added name field
-  image: { type: String }, // Added optional image field
+  commenterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  name: { type: String, required: true },
+  image: { type: String },
   text: { type: String, required: true },
   likes: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
 });
 
-const collaboratorSchema = new mongoose.Schema({
-  _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Explicitly adding ObjectId for clarity
+// Schema for team members
+const teamMemberSchema = new mongoose.Schema({
+  id: { type: mongoose.Schema.Types.ObjectId, auto: true },
   name: { type: String, required: true },
-  image: { type: String, required: true },
-  isAuthor: { type: Boolean, default: false }
+  role: { type: String, required: true }
+});
+
+// Schema for tools
+const toolSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String },
+  image: { type: String }
+});
+
+// Schema for tools and machines section
+const toolsAndMachinesSchema = new mongoose.Schema({
+  noToolsUsed: { type: Boolean, default: false },
+  tools: [toolSchema]
+});
+
+// Schema for apps and platforms
+const appPlatformSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  logo: { type: String }
+});
+
+// Schema for documentation
+const documentationSchema = new mongoose.Schema({
+  fileName: { type: String },
+  fileSize: { type: String },
+  fileUrl: { type: String }
+});
+
+// Schema for code and documentation section
+const codeAndDocumentationSchema = new mongoose.Schema({
+  repositoryLink: { type: String },
+  documentation: documentationSchema
 });
 
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  coverImage: { type: String }, // Renamed from card_image
-  description: { type: String, required: true }, // This will be for the short description
+  tags: { type: [String], default: [] },
+  coverImage: { type: String },
+  elevatorPitch: { type: String, required: true }, // renamed from description
+  projectDescription: { type: String }, // renamed from projectDescriptionFull
+  teamMembers: [teamMemberSchema],
+  toolsAndMachines: toolsAndMachinesSchema,
+  appsAndPlatforms: [appPlatformSchema],
+  codeAndDocumentation: codeAndDocumentationSchema,
+  // Comments section
+  comments: [commentSchema],
+  // Additional fields for internal use
   views: { type: Number, default: 0 },
-  comments: [commentSchema], // Replaced comments_count with an array of comments
-  created_at: { type: Date, default: Date.now },
-  collaborators: [collaboratorSchema],
-  // Using the new schemas for the arrays
-  componentsAndSupplies: [detailItemSchema],
-  toolsAndMachines: [detailItemSchema],
-  appsAndPlatforms: [detailItemSchema],
-  projectDescriptionFull: { type: String }, // For the longer project description
-  code: [linkItemSchema],
-  downloadableFiles: [linkItemSchema],
-  documentation: { type: [linkItemSchema], required: true },
-  // Boolean flags from the form
-  noToolsUsed: { type: Boolean, default: false },
-  noFilesToAdd: { type: Boolean, default: false },
-  // Approval status
-  status: { type: Boolean, default: false }, // true if approved, false otherwise
-  // Reviewer Teacher ID
-  reviewedByTeacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Assuming a 'User' model exists for teachers
-  // Likes tracking
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // Array to store user IDs who liked
+  status: { type: Boolean, default: false },
+  reviewedByTeacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, {
   timestamps: true
 });
