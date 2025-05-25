@@ -157,7 +157,7 @@ export const createProject = async (req, res) => {
     }
 
     // Process documentation files
-    let processedDocumentation = parsedCodeAndDocumentation?.documentation ? [parsedCodeAndDocumentation.documentation] : [];
+    let processedDocumentation = safeParseJSON(documentation) || [];
     if (Array.isArray(processedDocumentation)) {
       processedDocumentation = processedDocumentation.map((docItem, index) => {
         const docFile = files && files.documentationFiles && files.documentationFiles[index];
@@ -172,7 +172,6 @@ export const createProject = async (req, res) => {
           });
           uploadPromises.push(uploadPromise);
         }
-        return docItem;
         return docItem;
       });
     }
@@ -207,21 +206,10 @@ export const createProject = async (req, res) => {
       
       // Apps and platforms
       appsAndPlatforms: processedApps,
-      
-      // Code and documentation
-      codeAndDocumentation: {
-        repositoryLink: parsedCodeAndDocumentation?.repositoryLink || '',
-        documentation: processedDocumentation[0] || null
-      },
-      
-      // Comments (empty by default)
-      comments: [],
-      
-      // Internal fields with defaults
-      views: 0,
-      status: false,
-      reviewedByTeacherId: reviewedByTeacherId || null,
-      likes: []
+      projectDescription,
+      code: safeParseJSON(code) || [],
+      documentation: processedDocumentation,
+      noToolsUsed,
     });
 
     const savedProject = await project.save();
