@@ -157,24 +157,30 @@ export const createProject = async (req, res) => {
     }
 
     // Process documentation files
-    let processedDocumentation = parsedCodeAndDocumentation?.documentation ? [parsedCodeAndDocumentation.documentation] : [];
-    if (Array.isArray(processedDocumentation)) {
-      processedDocumentation = processedDocumentation.map((docItem, index) => {
-        const docFile = files && files.documentationFiles && files.documentationFiles[index];
-        if (docFile) {
-          const uploadPromise = uploadToCloudinary(docFile, { folder: 'project_documentation', resource_type: 'raw' }).then(result => ({
-            fileName: docFile.originalname,
-            fileSize: result.bytes,
-            fileUrl: result.secure_url
-          })).catch(error => {
-            console.error('Cloudinary upload error for documentation file:', error);
-            return null;
-          });
-          uploadPromises.push(uploadPromise);
-        }
-        return docItem;
-        return docItem;
-      });
+    let processedDocumentation = null;
+    if (files && files.documentationFiles && files.documentationFiles[0]) {
+      try {
+        const docFile = files.documentationFiles[0];
+        const result = await uploadToCloudinary(docFile, { 
+          folder: 'project_documentation', 
+          resource_type: 'raw' 
+        });
+        processedDocumentation = {
+          fileName: docFile.originalname,
+          fileSize: result.bytes,
+          fileUrl: result.secure_url
+        };
+      } catch (error) {
+        console.error('Cloudinary upload error for documentation file:', error);
+        processedDocumentation = null;
+      }
+    } else if (parsedCodeAndDocumentation?.documentation) {
+      // If no file upload but documentation data provided in request
+      processedDocumentation = {
+        fileName: parsedCodeAndDocumentation.documentation.fileName,
+        fileSize: parsedCodeAndDocumentation.documentation.fileSize,
+        fileUrl: parsedCodeAndDocumentation.documentation.fileUrl
+      };
     }
 
     // Wait for ALL Cloudinary uploads to complete
@@ -211,7 +217,7 @@ export const createProject = async (req, res) => {
       // Code and documentation
       codeAndDocumentation: {
         repositoryLink: parsedCodeAndDocumentation?.repositoryLink || '',
-        documentation: processedDocumentation[0] || null
+        documentation: processedDocumentation
       },
       
       // Comments (empty by default)
