@@ -3,8 +3,6 @@ import {
   getProjects,
   getProject,
   createProject,
-  updateProject,
-  deleteProject,
   incrementViews,
   addLike,
   addComment,
@@ -20,8 +18,6 @@ router.use(protectRoute);
 router.get('/', getProjects);
 router.get('/:id', getProject);
 router.post('/create', uploadProjectFiles, createProject);
-router.put('/:id', uploadProjectFiles, updateProject);
-router.delete('/:id', deleteProject);
 
 // Route to update project status
 router.put('/:id/status', updateProjectStatus);

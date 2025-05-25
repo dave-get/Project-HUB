@@ -50,61 +50,72 @@ export const getProject = async (req, res) => {
   }
 };
 
+// Helper function to safely parse JSON
+const safeParseJSON = (data) => {
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      return data;
+    }
+  }
+  return data;
+};
+
 // Create project
 export const createProject = async (req, res) => {
   try {
-    const { title, elevatorPitch, collaborators, componentsAndSupplies, toolsAndMachines, appsAndPlatforms, projectDescription, code, documentation, noToolsUsed } = req.body;
-    const files = req.files; // Files uploaded by Multer
-
-    // Check if a project with the same title already exists
-    const existingProject = await Project.findOne({ title });
-    if (existingProject) {
-      return res.status(400).json({ message: 'A project with this title already exists.' });
-    }
-
-    // Helper function to safely parse JSON
-    const safeParseJSON = (data) => {
-      if (typeof data === 'string') {
-        try {
-          return JSON.parse(data);
-        } catch (e) {
-          // console.error('JSON parse error:', e);
-          return data;
-        }
-      }
-      return data;
-    };
+    const { 
+      title, 
+      elevatorPitch, 
+      collaborators, 
+      toolsAndMachines, 
+      appsAndPlatforms, 
+      projectDescription, 
+      code, 
+      documentation, 
+      noToolsUsed,
+      reviewedByTeacherId  // Add this to destructuring
+    } = req.body;
+    const files = req.files;
 
     // Arrays to hold all Cloudinary upload promises
     const uploadPromises = [];
 
+    // Parse JSON strings from form-data
+    const parsedTeamMembers = safeParseJSON(req.body.teamMembers);
+    const parsedToolsAndMachines = safeParseJSON(req.body.toolsAndMachines);
+    const parsedAppsAndPlatforms = safeParseJSON(req.body.appsAndPlatforms);
+    const parsedCodeAndDocumentation = safeParseJSON(req.body.codeAndDocumentation);
+    const parsedTags = safeParseJSON(req.body.tags);
+
     // Process team/collaborators
     let processedCollaborators = [];
-    if (collaborators) {
-      const parsedCollaborators = safeParseJSON(collaborators);
-      // console.log('Parsed collaborators data before processing:', parsedCollaborators);
-
-      if (Array.isArray(parsedCollaborators)) {
-        processedCollaborators = parsedCollaborators.map((member, index) => {
-          const teamImageFile = files && files.teamImages && files.teamImages[index];
-          if (teamImageFile) {
-            // Start upload and push the promise to the array
-            const uploadPromise = uploadToCloudinary(teamImageFile, { folder: 'project_team' }).then(result => {
-              member.image = result.secure_url; // Update the image URL when upload is complete
-            }).catch(error => {
-              console.error('Cloudinary upload error for team image:', error);
-              member.image = null; // Handle error by setting image to null or similar
-            });
-            uploadPromises.push(uploadPromise);
-          }
-          return member; // Return the member object immediately
-        });
+    if (parsedTeamMembers) {
+      try {
+        // Handle both string and array formats
+        const teamMembersArray = Array.isArray(parsedTeamMembers) ? parsedTeamMembers : JSON.parse(parsedTeamMembers);
+        if (Array.isArray(teamMembersArray)) {
+          processedCollaborators = teamMembersArray.map((member) => {
+            if (!member.id) {
+              throw new Error('Team member ID is required');
+            }
+            return {
+              id: member.id,
+              name: member.name,
+              role: member.role
+            };
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing team members:', error);
+        throw new Error('Invalid team members format');
       }
     }
-    // console.log('Processed collaborators array after mapping (promises not yet resolved):', processedCollaborators);
 
     // Process app logos
-    let processedApps = safeParseJSON(appsAndPlatforms) || [];
+    let processedApps = parsedAppsAndPlatforms || [];
     if (Array.isArray(processedApps)) {
       processedApps = processedApps.map((app, index) => {
         const appLogoFile = files && files.appLogos && files.appLogos[index];
@@ -114,9 +125,12 @@ export const createProject = async (req, res) => {
           }).catch(error => {
             console.error('Cloudinary upload error for app logo:', error);
             app.logo = null;
+            console.error('Cloudinary upload error for app logo:', error);
+            app.logo = null;
           });
           uploadPromises.push(uploadPromise);
         }
+        return app;
         return app;
       });
     }
@@ -124,7 +138,7 @@ export const createProject = async (req, res) => {
     // Process tool images when noToolsUsed is false
     let processedTools = [];
     if (!noToolsUsed) {
-      const toolsData = safeParseJSON(toolsAndMachines) || { noToolsUsed: false, tools: [] };
+      const toolsData = parsedToolsAndMachines || { noToolsUsed: false, tools: [] };
       if (Array.isArray(toolsData.tools)) {
         processedTools = toolsData.tools.map((tool, index) => {
           const toolImageFile = files && files.toolImages && files.toolImages[index];
@@ -143,7 +157,7 @@ export const createProject = async (req, res) => {
     }
 
     // Process documentation files
-    let processedDocumentation = safeParseJSON(documentation) || [];
+    let processedDocumentation = parsedCodeAndDocumentation?.documentation ? [parsedCodeAndDocumentation.documentation] : [];
     if (Array.isArray(processedDocumentation)) {
       processedDocumentation = processedDocumentation.map((docItem, index) => {
         const docFile = files && files.documentationFiles && files.documentationFiles[index];
@@ -159,6 +173,7 @@ export const createProject = async (req, res) => {
           uploadPromises.push(uploadPromise);
         }
         return docItem;
+        return docItem;
       });
     }
 
@@ -173,168 +188,47 @@ export const createProject = async (req, res) => {
     }
 
     const project = new Project({
+      // Required fields
       title,
       elevatorPitch,
+      
+      // Optional fields with defaults
+      tags: parsedTags || [],
       coverImage,
+      projectDescription,
+      
+      // Team and collaboration
       teamMembers: processedCollaborators,
+      
+      // Tools and machines
       toolsAndMachines: noToolsUsed 
         ? { noToolsUsed: true, tools: [] } 
         : { noToolsUsed: false, tools: processedTools },
+      
+      // Apps and platforms
       appsAndPlatforms: processedApps,
-      projectDescription,
-      code: safeParseJSON(code) || [],
-      documentation: processedDocumentation,
-      noToolsUsed,
+      
+      // Code and documentation
+      codeAndDocumentation: {
+        repositoryLink: parsedCodeAndDocumentation?.repositoryLink || '',
+        documentation: processedDocumentation[0] || null
+      },
+      
+      // Comments (empty by default)
+      comments: [],
+      
+      // Internal fields with defaults
+      views: 0,
+      status: false,
+      reviewedByTeacherId: reviewedByTeacherId || null,
+      likes: []
     });
 
     const savedProject = await project.save();
-    // console.log('Saved project:', savedProject);
-    res.status(201).json({ project: savedProject });
-    // console.log('Saved project:', savedProject);
     res.status(201).json({ project: savedProject });
   } catch (error) {
     console.error('Error creating project:', error);
     res.status(400).json({ message: error.message });
-  }
-};
-
-// Update project
-export const updateProject = async (req, res) => {
-  try {
-    const { title, description, collaborators, componentsAndSupplies, toolsAndMachines, appsAndPlatforms, projectDescriptionFull, code, downloadableFiles, documentation, noToolsUsed, noFilesToAdd, status, reviewedByTeacherId } = req.body;
-    const files = req.files; // Files uploaded by Multer
-
-    // Arrays to hold all Cloudinary upload promises for update
-    const uploadPromises = [];
-
-    // Handle cover image upload for update
-    let coverImage = undefined;
-    if (files && files.coverImage && files.coverImage[0]) {
-      const result = await uploadToCloudinary(files.coverImage[0], { folder: 'project_covers' });
-      coverImage = result.secure_url;
-    }
-
-    // Process team/collaborators for update
-     let processedCollaborators = [];
-     if (collaborators) {
-       const parsedCollaborators = safeParseJSON(collaborators);
-       if (Array.isArray(parsedCollaborators)) {
-         processedCollaborators = parsedCollaborators.map((member, index) => {
-           const teamImageFile = files && files.teamImages && files.teamImages[index];
-           if (teamImageFile) {
-             const uploadPromise = uploadToCloudinary(teamImageFile, { folder: 'project_team' }).then(result => {
-               member.image = result.secure_url;
-             }).catch(error => {
-               console.error('Cloudinary upload error for team image:', error);
-               member.image = null;
-             });
-             uploadPromises.push(uploadPromise);
-           }
-           return member;
-         });
-       }
-     }
-
-   // Process components with images for update
-   let processedComponents = safeParseJSON(componentsAndSupplies) || [];
-   if (Array.isArray(processedComponents)) {
-     processedComponents = processedComponents.map((item, index) => {
-         const componentImageFile = files && files.componentImages && files.componentImages[index];
-         if (componentImageFile) {
-           const uploadPromise = uploadToCloudinary(componentImageFile, { folder: 'project_components' }).then(result => {
-            item.image = result.secure_url;
-           }).catch(error => {
-             console.error('Cloudinary upload error for component image:', error);
-             item.image = null;
-           });
-           uploadPromises.push(uploadPromise);
-         }
-         return item;
-       });
-   }
-
-  // Process downloadable files for update
-  let processedDownloadableFiles = safeParseJSON(downloadableFiles) || [];
-  if (Array.isArray(processedDownloadableFiles)) {
-    processedDownloadableFiles = processedDownloadableFiles.map((fileItem, index) => {
-        const downloadableFile = files && files.downloadableFiles && files.downloadableFiles[index];
-        if (downloadableFile) {
-          const uploadPromise = uploadToCloudinary(downloadableFile, { folder: 'project_downloads', resource_type: 'raw' }).then(result => {
-           fileItem.value = result.secure_url;
-          }).catch(error => {
-            console.error('Cloudinary upload error for downloadable file:', error);
-            fileItem.value = null;
-          });
-          uploadPromises.push(uploadPromise);
-        }
-        return fileItem;
-      });
-  }
-
-  // Process documentation files
-  let processedDocumentation = safeParseJSON(documentation) || [];
-  if (Array.isArray(processedDocumentation)) {
-    processedDocumentation = processedDocumentation.map((docItem, index) => {
-      const docFile = files && files.documentationFiles && files.documentationFiles[index];
-      if (docFile) {
-        const uploadPromise = uploadToCloudinary(docFile, { folder: 'project_documentation', resource_type: 'raw' }).then(result => ({
-          fileName: docFile.originalname,
-          fileSize: result.bytes,
-          fileUrl: result.secure_url
-        })).catch(error => {
-          console.error('Cloudinary upload error for documentation file:', error);
-          return null;
-        });
-        uploadPromises.push(uploadPromise);
-      }
-      return docItem;
-    });
-  }
-
-  // Wait for ALL Cloudinary uploads to complete before updating the project
-  await Promise.all(uploadPromises);
-
-    const updateData = {
-      title,
-      description,
-      coverImage: coverImage, // Use the uploaded file path/URL here
-      // category: req.body.category, // If category is still needed
-      collaborators: processedCollaborators, // Use processed team data with image URLs
-      toolsAndMachines: safeParseJSON(toolsAndMachines) || [], // Assuming similar processing needed here
-      appsAndPlatforms: safeParseJSON(appsAndPlatforms) || [], // Assuming similar processing needed here
-      projectDescriptionFull: projectDescriptionFull,
-      code: safeParseJSON(code) || [],
-      documentation: processedDocumentation,
-      noToolsUsed,
-      status,
-      reviewedByTeacherId,
-    };
-
-    const project = await Project.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
-    }
-    res.json({ project });
-  } catch (error) {
-    console.error('Error updating project:', error);
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// Delete project
-export const deleteProject = async (req, res) => {
-  try {
-    const project = await Project.findByIdAndDelete(req.params.id);
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
-    }
-    res.json({ message: 'Project deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };
 

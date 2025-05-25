@@ -12,7 +12,7 @@ const commentSchema = new mongoose.Schema({
 
 // Schema for team members
 const teamMemberSchema = new mongoose.Schema({
-  id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+  id: { type: mongoose.Schema.Types.ObjectId, required: true },
   name: { type: String, required: true },
   role: { type: String, required: true }
 });
