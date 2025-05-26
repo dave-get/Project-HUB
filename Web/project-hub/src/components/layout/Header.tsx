@@ -21,9 +21,8 @@ import Cookies from 'js-cookie';
 
 const Header = () => {
   const router = useRouter();
-  const { data: user, isLoading } = useGetUserQuery();
   const [logout] = useLogoutMutation();
-  const token = Cookies.get('access_token')
+  const { data: user, isLoading } = useGetUserQuery();
 
   const handleLogout = async () => {
     try {
@@ -45,8 +44,8 @@ const Header = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-10 w-10 border-2 border-primary">
-                <AvatarImage src="/" alt="dawit getachew" />
-                <AvatarFallback>D</AvatarFallback>
+                <AvatarImage src={user?.data?.imageUrl} alt="dawit getachew" />
+                <AvatarFallback>{user?.data?.fullName[0]}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
@@ -54,10 +53,10 @@ const Header = () => {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none text-foreground">
-                  Dawit Getachew
+                  {user?.data?.fullName}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  dawitgetachew@gmail.com
+                  {user?.data?.email}
                 </p>
               </div>
             </DropdownMenuLabel>

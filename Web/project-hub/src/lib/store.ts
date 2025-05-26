@@ -7,6 +7,8 @@ import { proposalSubmitApi } from '@/features/proposalSubmitApi/proposalSubmitAp
 import { usersApi } from '@/features/usersApi/usersApi';
 import { proposalsApi } from '@/features/proposalsApi/proposalsApi';
 import { projectFeedbackApi } from '@/features/projectFeedbackApi/ProjectFeedbackApi';
+import { projectSubmitApi } from '@/features/projectSubmitApi/projectSubmitApi';
+
 export const store = configureStore({
     reducer: {
         [authApi.reducerPath]: authApi.reducer,
@@ -16,6 +18,7 @@ export const store = configureStore({
         [usersApi.reducerPath]: usersApi.reducer,
         [proposalsApi.reducerPath]: proposalsApi.reducer,
         [projectFeedbackApi.reducerPath]: projectFeedbackApi.reducer,
+        [projectSubmitApi.reducerPath]: projectSubmitApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware()
@@ -25,8 +28,8 @@ export const store = configureStore({
             .concat(proposalSubmitApi.middleware)
             .concat(usersApi.middleware)
             .concat(proposalsApi.middleware)
-            .concat(projectFeedbackApi.middleware),
-
+            .concat(projectFeedbackApi.middleware)
+            .concat(projectSubmitApi.middleware)
 });
 
 export type RootState = ReturnType<typeof store.getState>;

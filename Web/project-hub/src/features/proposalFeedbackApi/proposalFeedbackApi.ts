@@ -37,6 +37,7 @@ export interface CreateFeedbackRequest {
   projectTitle: string;
   sections: FeedbackSection[];
   attachments: FeedbackAttachment[];
+  status: string;
 }
 
 // Define the update feedback request type
