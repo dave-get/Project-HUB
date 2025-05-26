@@ -18,6 +18,7 @@ export const usersApi = createApi({
       }),
       providesTags: ["User"],
     }),
+    // Get students only
     getStudents: builder.query<profileType[], void>({
       query: () => ({
         url: USER_ROUTES.PROFILE,
@@ -46,5 +47,8 @@ export const usersApi = createApi({
   }),
 });
 
-export const { useGetUsersQuery, useGetTeachersQuery, useGetStudentsQuery } =
-  usersApi;
+export const {
+  useGetUsersQuery,
+  useGetStudentsQuery,
+  useGetTeachersQuery,
+} = usersApi;

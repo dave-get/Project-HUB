@@ -1,28 +1,25 @@
-// Team Member
-export type TeamMember = {
+export interface TeamMember {
   id: string;
   name: string;
   role: string;
-};
+}
 
-// Tool
-export type Tool = {
+export interface AppPlatform {
+  title: string;
+  description: string;
+  logo: File;
+}
+
+export interface Tool {
   name: string;
   description: string;
-  image: string;
-};
+  image: File;
+}
 
 // Tools and Machines
 export type ToolsAndMachines = {
   noToolsUsed: boolean;
   tools?: Tool[];
-};
-
-// App or Platform
-export type AppOrPlatform = {
-  title: string;
-  description: string;
-  logo: string;
 };
 
 // Documentation
@@ -48,7 +45,7 @@ export type ProjectSubmissionResponse = {
   projectDescription: string;
   teamMembers: TeamMember[];
   toolsAndMachines: ToolsAndMachines;
-  appsAndPlatforms: AppOrPlatform[];
+  appsAndPlatforms: AppPlatform[];
   codeAndDocumentation: CodeAndDocumentation;
   status: boolean;
   reviewedByTeacherId?: string;
