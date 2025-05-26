@@ -6,9 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { CheckCircle2 } from "lucide-react";
+import { useSubmitProjectMutation } from "@/features/projectSubmitApi/projectSubmitApi";
+import { useRouter } from "next/navigation";
 
 // Import our organized components and types
 import { BasicInfo } from "./sections/BasicInfo";
@@ -21,6 +20,8 @@ import { ChecklistStatus } from "./types";
 import { ProgressTracker } from "./ProgressTracker";
 
 const ProjectSubmission = () => {
+  const router = useRouter();
+  const [submitProject] = useSubmitProjectMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [checklistStatus, setChecklistStatus] = useState<ChecklistStatus>({
@@ -40,17 +41,40 @@ const ProjectSubmission = () => {
     resolver: zodResolver(projectSchema),
     defaultValues: {
       title: "",
-      elevatorPitch: "",
       tags: [],
-      teamMembers: [],
-      workAttribution: "",
-      componentsAndSupplies: "",
-      toolsAndMachines: "",
-      appsAndPlatforms: [],
+      coverImage: undefined,
+      elevatorPitch: "",
       projectDescription: "",
-      codeLink: "",
+      teamMembers: [],
+      toolsAndMachines: {
+        noToolsUsed: false,
+        tools: []
+      },
+      appsAndPlatforms: [],
+      codeAndDocumentation: {
+        repositoryLink: "",
+        documentation: {
+          fileName: "",
+          fileSize: "",
+          file: undefined
+        }
+      },
+      status: false,
+      reviewedByTeacherId: ""
     },
   });
+
+  // Add validation state logging
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      console.log('Form field changed:', { name, type, value });
+      const result = projectSchema.safeParse(value);
+      if (!result.success) {
+        console.log('Validation errors:', result.error.format());
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   const calculateProgress = () => {
     const values = form.getValues();
@@ -64,13 +88,16 @@ const ProjectSubmission = () => {
       { value: values.teamMembers.length > 0, name: 'team' },
       { value: values.appsAndPlatforms.length > 0, name: 'apps' },
       { value: !!values.projectDescription, name: 'projectDescription' },
-      { value: !!values.codeLink, name: 'code' },
-      { value: !!values.documentation, name: 'documentation' }
+      { value: !!values.codeAndDocumentation.repositoryLink && !!values.codeAndDocumentation.documentation.file, name: 'code' },
+      { value: !!values.codeAndDocumentation.documentation.file, name: 'documentation' }
     ];
 
     // Add tools field only if tools are used
-    if (!noToolsUsed) {
-      allFields.splice(4, 0, { value: !!values.toolsAndMachines, name: 'tools' });
+    if (!values.toolsAndMachines.noToolsUsed) {
+      allFields.splice(4, 0, { 
+        value: (values.toolsAndMachines.tools || []).length > 0, 
+        name: 'tools' 
+      });
     }
 
     // Count completed fields
@@ -79,7 +106,7 @@ const ProjectSubmission = () => {
     });
 
     // Calculate percentage based on total number of fields
-    const totalFields = noToolsUsed ? 8 : 9;
+    const totalFields = values.toolsAndMachines.noToolsUsed ? 8 : 9;
     return Math.floor((completedFields / totalFields) * 100);
   };
 
@@ -92,13 +119,13 @@ const ProjectSubmission = () => {
       team: values.teamMembers.length > 0,
       apps: values.appsAndPlatforms.length > 0,
       projectDescription: !!values.projectDescription,
-      code: !!values.codeLink,
-      documentation: !!values.documentation
+      code: !!values.codeAndDocumentation.repositoryLink && !!values.codeAndDocumentation.documentation.file,
+      documentation: !!values.codeAndDocumentation.documentation.file
     };
 
     // Only add tools status if tools are used
-    if (!noToolsUsed) {
-      newStatus.tools = !!values.toolsAndMachines;
+    if (!values.toolsAndMachines.noToolsUsed) {
+      newStatus.tools = (values.toolsAndMachines.tools || []).length > 0;
     }
 
     setChecklistStatus(newStatus);
@@ -121,18 +148,85 @@ const ProjectSubmission = () => {
     try {
       setIsSubmitting(true);
       
-      // TODO: Implement API call to submit project
-      console.log('Project data:', data);
+      const formData = new FormData();
+      
+      // Append basic fields
+      formData.append("title", data.title);
+      formData.append("elevatorPitch", data.elevatorPitch);
+      formData.append("projectDescription", data.projectDescription);
+      formData.append("tags", JSON.stringify(data.tags));
+      formData.append("status", data.status.toString());
+      
+      // Append files
+      if (data.coverImage) {
+        formData.append("coverImage", data.coverImage);
+      }
+      
+      // Append team members
+      formData.append("teamMembers", JSON.stringify(data.teamMembers));
+      
+      // Append tools
+      formData.append("toolsAndMachines", JSON.stringify({
+        noToolsUsed: data.toolsAndMachines.noToolsUsed,
+        tools: data.toolsAndMachines.tools?.map(tool => ({
+          name: tool.name,
+          description: tool.description
+        }))
+      }));
+      
+      // Append tool images separately
+      data.toolsAndMachines.tools?.forEach((tool, index) => {
+        if (tool.image) {
+          formData.append("toolImages", tool.image);
+        }
+      });
+      
+      // Append apps
+      formData.append("appsAndPlatforms", JSON.stringify(
+        data.appsAndPlatforms.map(app => ({
+          title: app.title,
+          description: app.description
+        }))
+      ));
+      
+      // Append app logos separately
+      data.appsAndPlatforms.forEach((app) => {
+        if (app.logo) {
+          formData.append("appLogos", app.logo);
+        }
+      });
+      
+      // Append code and documentation separately
+      formData.append("code", JSON.stringify({
+        repositoryLink: data.codeAndDocumentation.repositoryLink
+      }));
+      
+      if (data.codeAndDocumentation.documentation.file) {
+        formData.append("documentationFiles", data.codeAndDocumentation.documentation.file);
+      }
+      
+      if (data.reviewedByTeacherId) {
+        formData.append("reviewedByTeacherId", data.reviewedByTeacherId);
+      }
+
+      // Debug log the FormData contents
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      
+      const response = await submitProject(formData).unwrap();
       
       toast.success("Project submitted successfully!", {
         description: "Your project has been sent for review.",
       });
       
+      // Reset form but don't redirect
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Submission error:", error);
       toast.error("Failed to submit project", {
-        description: "Please try again later.",
+        description: error.data?.message || "Please try again later.",
       });
     } finally {
       setIsSubmitting(false);
@@ -162,10 +256,45 @@ const ProjectSubmission = () => {
                 <AppsSection form={form} />
                 <ProjectDescription form={form} />
 
+                {/* Debug form errors */}
+                {Object.keys(form.formState.errors).length > 0 && (
+                  <div className="p-4 bg-destructive/10 rounded-lg">
+                    <h3 className="text-destructive font-medium mb-2">Form Validation Errors:</h3>
+                    <ul className="list-disc list-inside space-y-1">
+                      {Object.entries(form.formState.errors).map(([field, error]) => (
+                        <li key={field} className="text-sm text-destructive">
+                          {field}: {error.message as string}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Debug form state */}
+                <div className="p-4 bg-muted rounded-lg">
+                  <h3 className="font-medium mb-2">Form State:</h3>
+                  <pre className="text-sm overflow-auto">
+                    {JSON.stringify({
+                      isValid: form.formState.isValid,
+                      isDirty: form.formState.isDirty,
+                      isSubmitting: form.formState.isSubmitting,
+                      errors: form.formState.errors,
+                      values: form.getValues()
+                    }, null, 2)}
+                  </pre>
+                </div>
+
                 <Button
                   type="submit"
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !form.formState.isValid}
+                  onClick={() => {
+                    console.log('Form State:', {
+                      isValid: form.formState.isValid,
+                      errors: form.formState.errors,
+                      values: form.getValues()
+                    });
+                  }}
                 >
                   {isSubmitting ? "Submitting..." : "Submit Project"}
                 </Button>

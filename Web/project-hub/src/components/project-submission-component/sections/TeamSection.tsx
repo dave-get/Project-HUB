@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { UseFormReturn } from "react-hook-form";
 import { useState, useRef } from "react";
-import { students } from "../constants";
 import { TeamMember } from "../types";
+import { useGetStudentsQuery } from "@/features/usersApi/usersApi";
+import { profileType } from "@/type/profile";
 
 interface TeamSectionProps {
   form: UseFormReturn<any>;
@@ -15,14 +16,19 @@ interface TeamSectionProps {
 
 export const TeamSection = ({ form }: TeamSectionProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<{ id: number; name: string } | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<{ id: string; name: string } | null>(null);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [roleInput, setRoleInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
+  const {data} = useGetStudentsQuery()
+  const students = data as profileType[]
 
-  const handleStudentSelect = (student: { id: number; name: string }) => {
-    setSelectedStudent(student);
+  const handleStudentSelect = (student: profileType) => {
+    setSelectedStudent({
+      id: student._id,
+      name: student.fullName
+    });
     setOpen(false);
     setIsRoleModalOpen(true);
   };
@@ -30,12 +36,13 @@ export const TeamSection = ({ form }: TeamSectionProps) => {
   const handleRoleConfirm = () => {
     if (selectedStudent && roleInput.trim()) {
       const newMember: TeamMember = {
+        id: selectedStudent.id,
         name: selectedStudent.name,
         role: roleInput.trim()
       };
       
       const currentMembers = form.getValues("teamMembers");
-      if (!currentMembers.some((member: TeamMember) => member.name === newMember.name)) {
+      if (!currentMembers.some((member: TeamMember) => member.id === newMember.id)) {
         form.setValue("teamMembers", [...currentMembers, newMember]);
       }
       
@@ -49,7 +56,7 @@ export const TeamSection = ({ form }: TeamSectionProps) => {
     const currentMembers = form.getValues("teamMembers");
     form.setValue(
       "teamMembers",
-      currentMembers.filter((member: TeamMember) => member.name !== memberToRemove.name)
+      currentMembers.filter((member: TeamMember) => member.id !== memberToRemove.id)
     );
   };
 
@@ -103,11 +110,11 @@ export const TeamSection = ({ form }: TeamSectionProps) => {
                 <div className="max-h-60 overflow-auto">
                   {students
                     .filter(student => 
-                      student.name.toLowerCase().includes(searchQuery.toLowerCase())
+                      student?.fullName.toLowerCase().includes(searchQuery.toLowerCase())
                     )
                     .map((student) => (
                       <div
-                        key={student.id}
+                        key={student?._id}
                         className="px-4 py-2 hover:bg-muted cursor-pointer flex items-center gap-2"
                         onClick={() => {
                           handleStudentSelect(student);
@@ -116,14 +123,14 @@ export const TeamSection = ({ form }: TeamSectionProps) => {
                       >
                         <Avatar className="h-6 w-6">
                           <AvatarFallback className="text-xs">
-                            {student.name.split(' ').map(n => n[0]).join('')}
+                            {student?.fullName.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm">{student.name}</span>
+                        <span className="text-sm">{student?.fullName}</span>
                       </div>
                     ))}
                   {students.filter(student => 
-                    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    student?.fullName.toLowerCase().includes(searchQuery.toLowerCase())
                   ).length === 0 && (
                     <div className="px-4 py-2 text-sm text-muted-foreground">
                       No students found
@@ -141,6 +148,9 @@ export const TeamSection = ({ form }: TeamSectionProps) => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Assign Role for {selectedStudent?.name}</DialogTitle>
+            <DialogDescription>
+              Enter the role this team member will have in the project.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Input

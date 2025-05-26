@@ -34,7 +34,7 @@ export const AppsSection = ({ form }: AppsSectionProps) => {
       };
       const updatedApps = [...apps, appToAdd];
       setApps(updatedApps);
-      form.setValue("appsAndPlatforms", updatedApps);
+      form.setValue("appsAndPlatforms", updatedApps, { shouldValidate: true });
       setNewApp({ title: "", description: "", logo: null as unknown as File });
       setShowAppForm(false);
     }

@@ -11,6 +11,17 @@ interface ProjectDescriptionProps {
 }
 
 export const ProjectDescription = ({ form }: ProjectDescriptionProps) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue("codeAndDocumentation.documentation", {
+        fileName: file.name,
+        fileSize: file.size.toString(),
+        file: file
+      }, { shouldValidate: true });
+    }
+  };
+
   return (
     <>
       {/* Project Description Card */}
@@ -56,10 +67,10 @@ export const ProjectDescription = ({ form }: ProjectDescriptionProps) => {
         <CardContent className="p-8">
           <FormField
             control={form.control}
-            name="codeLink"
+            name="codeAndDocumentation.repositoryLink"
             render={({ field }) => (
               <FormItem className="mb-6">
-                <FormLabel className="text-foreground">Code Repository Link (Optional)</FormLabel>
+                <FormLabel className="text-foreground">Code Repository Link</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter GitHub or other repository link"
@@ -74,7 +85,7 @@ export const ProjectDescription = ({ form }: ProjectDescriptionProps) => {
 
           <FormField
             control={form.control}
-            name="documentation"
+            name="codeAndDocumentation.documentation"
             render={({ field: { value, onChange, ...field } }) => (
               <FormItem>
                 <FormLabel className="text-foreground">Project Documentation</FormLabel>
@@ -88,25 +99,19 @@ export const ProjectDescription = ({ form }: ProjectDescriptionProps) => {
                     </div>
                     <input
                       type="file"
-                      accept=".pdf,.doc,.docx"
+                      accept={ACCEPTED_DOC_TYPES.join(',')}
                       className="hidden"
                       id="documentation-upload"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          onChange(file);
-                          form.setValue("documentation", file, { shouldValidate: true });
-                        }
-                      }}
+                      onChange={handleFileChange}
                       {...field}
                     />
                     <span className="text-sm font-medium text-foreground">
                       Click to upload or drag and drop
                     </span>
                     <p className="text-xs text-muted-foreground mt-1">PDF, DOC, DOCX up to 10MB</p>
-                    {value && (
+                    {value?.fileName && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        Selected file: {(value as File).name}
+                        Selected file: {value.fileName}
                       </p>
                     )}
                   </label>

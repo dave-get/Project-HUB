@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tool } from "../types";
 
 interface ToolsSectionProps {
@@ -31,7 +31,10 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
       };
       const updatedTools = [...tools, toolToAdd];
       setTools(updatedTools);
-      form.setValue("toolsAndMachines", JSON.stringify(updatedTools));
+      form.setValue("toolsAndMachines", {
+        noToolsUsed: false,
+        tools: updatedTools
+      }, { shouldValidate: true });
       setNewTool({ name: "", description: "", image: null as unknown as File });
       setShowToolForm(false);
     }
@@ -40,8 +43,30 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
   const handleRemoveTool = (index: number) => {
     const updatedTools = tools.filter((_, i) => i !== index);
     setTools(updatedTools);
-    form.setValue("toolsAndMachines", JSON.stringify(updatedTools));
+    form.setValue("toolsAndMachines", {
+      noToolsUsed: false,
+      tools: updatedTools
+    });
   };
+
+  // Update tools state when noToolsUsed changes
+  useEffect(() => {
+    if (noToolsUsed) {
+      setTools([]);
+      form.setValue("toolsAndMachines", {
+        noToolsUsed: true,
+        tools: []
+      });
+    }
+  }, [noToolsUsed, form]);
+
+  // Initialize tools from form values
+  useEffect(() => {
+    const toolsAndMachines = form.getValues("toolsAndMachines");
+    if (toolsAndMachines && !toolsAndMachines.noToolsUsed && toolsAndMachines.tools) {
+      setTools(toolsAndMachines.tools);
+    }
+  }, [form]);
 
   return (
     <Card className="border-border">
@@ -66,7 +91,10 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
                 setNoToolsUsed(e.target.checked);
                 if (e.target.checked) {
                   setTools([]);
-                  form.setValue("toolsAndMachines", "");
+                  form.setValue("toolsAndMachines", {
+                    noToolsUsed: true,
+                    tools: []
+                  });
                 }
               }}
             />
