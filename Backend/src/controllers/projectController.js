@@ -30,7 +30,7 @@ const uploadToCloudinary = async (file, options = {}) => {
 // Get all projects
 export const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find({ status: true });
+    const projects = await Project.find();
     res.json({ projects });
   } catch (error) {
     res.status(500).json({ message: error.message });
