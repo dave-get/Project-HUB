@@ -6,7 +6,7 @@ import { proposalFeedbackApi } from '../features/proposalFeedbackApi/proposalFee
 import { proposalSubmitApi } from '@/features/proposalSubmitApi/proposalSubmitApi';
 import { usersApi } from '@/features/usersApi/usersApi';
 import { proposalsApi } from '@/features/proposalsApi/proposalsApi';
-
+import { projectFeedbackApi } from '@/features/projectFeedbackApi/ProjectFeedbackApi';
 export const store = configureStore({
     reducer: {
         [authApi.reducerPath]: authApi.reducer,
@@ -15,15 +15,17 @@ export const store = configureStore({
         [proposalSubmitApi.reducerPath]: proposalSubmitApi.reducer,
         [usersApi.reducerPath]: usersApi.reducer,
         [proposalsApi.reducerPath]: proposalsApi.reducer,
+        [projectFeedbackApi.reducerPath]: projectFeedbackApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware()
             .concat(authApi.middleware)
-            .concat(profileApi.middleware)
+            .concat(profileApi.middleware)  
             .concat(proposalFeedbackApi.middleware)
             .concat(proposalSubmitApi.middleware)
             .concat(usersApi.middleware)
             .concat(proposalsApi.middleware)
+            .concat(projectFeedbackApi.middleware),
 
 });
 
