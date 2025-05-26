@@ -6,9 +6,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { UseFormReturn } from "react-hook-form";
 import { useState, useRef } from "react";
-import { TeamMember } from "../types";
 import { useGetStudentsQuery } from "@/features/usersApi/usersApi";
 import { profileType } from "@/type/profile";
+import { TeamMember } from "@/type/project";
 
 interface TeamSectionProps {
   form: UseFormReturn<any>;

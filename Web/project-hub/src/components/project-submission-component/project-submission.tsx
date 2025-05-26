@@ -16,8 +16,20 @@ import { ToolsSection } from "./sections/ToolsSection";
 import { AppsSection } from "./sections/AppsSection";
 import { ProjectDescription } from "./sections/ProjectDescription";
 import { projectSchema, ProjectFormValues } from "./schemas/project";
-import { ChecklistStatus } from "./types";
 import { ProgressTracker } from "./ProgressTracker";
+
+
+export interface ChecklistStatus {
+  title: boolean;
+  description: boolean;
+  team: boolean;
+  tools?: boolean;
+  apps: boolean;
+  projectDescription: boolean;
+  code: boolean;
+  documentation: boolean;
+  coverImage: boolean;
+} 
 
 const ProjectSubmission = () => {
   const router = useRouter();
@@ -210,10 +222,10 @@ const ProjectSubmission = () => {
       }
 
       // Debug log the FormData contents
-      console.log('FormData contents:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
+      // console.log('FormData contents:');
+      // for (let [key, value] of formData.entries()) {
+      //   console.log(`${key}:`, value);
+      // }
       
       const response = await submitProject(formData).unwrap();
       
@@ -223,9 +235,9 @@ const ProjectSubmission = () => {
       
       // Reset form and redirect to project/submit page
       form.reset();
-      router.push("/projects");
+      router.push("/project/submit");
     } catch (error: any) {
-      console.error("Submission error:", error);
+      // console.error("Submission error:", error);
       toast.error("Failed to submit project", {
         description: error.data?.message || "Please try again later.",
       });
