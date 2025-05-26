@@ -69,16 +69,19 @@ export const createProject = async (req, res) => {
     const { 
       title, 
       elevatorPitch, 
-      collaborators, 
       toolsAndMachines, 
       appsAndPlatforms, 
       projectDescription, 
-      code, 
-      documentation, 
+      codeAndDocumentation,
       noToolsUsed,
-      reviewedByTeacherId  // Add this to destructuring
+      reviewedByTeacherId 
     } = req.body;
     const files = req.files;
+
+    // Validate reviewedByTeacherId if provided
+    if (reviewedByTeacherId && !mongoose.Types.ObjectId.isValid(reviewedByTeacherId)) {
+      return res.status(400).json({ message: 'Invalid reviewedByTeacherId format' });
+    }
 
     // Arrays to hold all Cloudinary upload promises
     const uploadPromises = [];
@@ -157,24 +160,33 @@ export const createProject = async (req, res) => {
     }
 
     // Process documentation files
-    let processedDocumentation = safeParseJSON(documentation) || [];
-    if (Array.isArray(processedDocumentation)) {
-      processedDocumentation = processedDocumentation.map((docItem, index) => {
-        const docFile = files && files.documentationFiles && files.documentationFiles[index];
-        if (docFile) {
-          const uploadPromise = uploadToCloudinary(docFile, { folder: 'project_documentation', resource_type: 'raw' }).then(result => ({
-            fileName: docFile.originalname,
-            fileSize: result.bytes,
-            fileUrl: result.secure_url
-          })).catch(error => {
+    let processedDocumentation = [];
+    if (files && files.documentationFiles && files.documentationFiles.length > 0) {
+      processedDocumentation = await Promise.all(
+        files.documentationFiles.map(async (docFile) => {
+          try {
+            const result = await uploadToCloudinary(docFile, { folder: 'project_documentation', resource_type: 'raw' });
+            return {
+              fileName: docFile.originalname,
+              fileSize: result.bytes,
+              fileUrl: result.secure_url
+            };
+          } catch (error) {
             console.error('Cloudinary upload error for documentation file:', error);
             return null;
-          });
-          uploadPromises.push(uploadPromise);
-        }
-        return docItem;
-      });
+          }
+        })
+      );
     }
+
+    // Get the documentation from codeAndDocumentation if it exists
+    const existingDocumentation = parsedCodeAndDocumentation?.documentation || {};
+
+    // Prepare codeAndDocumentation object
+    const finalCodeAndDocumentation = {
+      ...parsedCodeAndDocumentation,
+      documentation: processedDocumentation.length > 0 ? processedDocumentation[0] : existingDocumentation
+    };
 
     // Wait for ALL Cloudinary uploads to complete
     await Promise.all(uploadPromises);
@@ -207,9 +219,9 @@ export const createProject = async (req, res) => {
       // Apps and platforms
       appsAndPlatforms: processedApps,
       projectDescription,
-      code: safeParseJSON(code) || [],
-      documentation: processedDocumentation,
+      codeAndDocumentation: finalCodeAndDocumentation,
       noToolsUsed,
+      reviewedByTeacherId: reviewedByTeacherId
     });
 
     const savedProject = await project.save();
