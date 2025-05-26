@@ -18,7 +18,6 @@ import { ProjectDescription } from "./sections/ProjectDescription";
 import { projectSchema, ProjectFormValues } from "./schemas/project";
 import { ProgressTracker } from "./ProgressTracker";
 
-
 export interface ChecklistStatus {
   title: boolean;
   description: boolean;
@@ -29,8 +28,8 @@ export interface ChecklistStatus {
   code: boolean;
   documentation: boolean;
   coverImage: boolean;
+  tags: boolean;
 } 
-
 const ProjectSubmission = () => {
   const router = useRouter();
   const [submitProject] = useSubmitProjectMutation();
@@ -45,7 +44,8 @@ const ProjectSubmission = () => {
     projectDescription: false,
     code: false,
     documentation: false,
-    coverImage: false
+    coverImage: false,
+    tags: false
   });
   const [noToolsUsed, setNoToolsUsed] = useState(false);
 
@@ -74,6 +74,7 @@ const ProjectSubmission = () => {
       status: false,
       reviewedByTeacherId: ""
     },
+    mode: "onChange",
   });
 
   // Add validation state logging
@@ -93,32 +94,32 @@ const ProjectSubmission = () => {
     let completedFields = 0;
     
     // Define fields in the same order as the checklist
-    const allFields = [
+    const checklistItems = [
       { value: !!values.title, name: 'title' },
-      { value: !!values.elevatorPitch, name: 'description' },
+      { value: !!values.elevatorPitch, name: 'shortDescription' },
+      { value: values.tags?.length > 0, name: 'tags' },
       { value: !!values.coverImage, name: 'coverImage' },
       { value: values.teamMembers.length > 0, name: 'team' },
+      ...(values.toolsAndMachines.noToolsUsed ? [] : [{ value: (values.toolsAndMachines.tools || []).length > 0, name: 'tools' }]),
       { value: values.appsAndPlatforms.length > 0, name: 'apps' },
       { value: !!values.projectDescription, name: 'projectDescription' },
-      { value: !!values.codeAndDocumentation.repositoryLink && !!values.codeAndDocumentation.documentation.file, name: 'code' },
-      { value: !!values.codeAndDocumentation.documentation.file, name: 'documentation' }
+      { 
+        value: !!values.codeAndDocumentation.repositoryLink, 
+        name: 'code' 
+      },
+      { 
+        value: !!values.codeAndDocumentation.documentation.file, 
+        name: 'documentation' 
+      }
     ];
 
-    // Add tools field only if tools are used
-    if (!values.toolsAndMachines.noToolsUsed) {
-      allFields.splice(4, 0, { 
-        value: (values.toolsAndMachines.tools || []).length > 0, 
-        name: 'tools' 
-      });
-    }
-
     // Count completed fields
-    allFields.forEach(field => {
+    checklistItems.forEach(field => {
       if (field.value) completedFields++;
     });
 
     // Calculate percentage based on total number of fields
-    const totalFields = values.toolsAndMachines.noToolsUsed ? 8 : 9;
+    const totalFields = checklistItems.length;
     return Math.floor((completedFields / totalFields) * 100);
   };
 
@@ -128,10 +129,11 @@ const ProjectSubmission = () => {
       title: !!values.title,
       description: !!values.elevatorPitch,
       coverImage: !!values.coverImage,
+      tags: values.tags?.length > 0,
       team: values.teamMembers.length > 0,
       apps: values.appsAndPlatforms.length > 0,
       projectDescription: !!values.projectDescription,
-      code: !!values.codeAndDocumentation.repositoryLink && !!values.codeAndDocumentation.documentation.file,
+      code: !!values.codeAndDocumentation.repositoryLink,
       documentation: !!values.codeAndDocumentation.documentation.file
     };
 
@@ -179,13 +181,17 @@ const ProjectSubmission = () => {
       
       // Append tools
       formData.append("toolsAndMachines", JSON.stringify({
-        noToolsUsed: data.toolsAndMachines.noToolsUsed,
         tools: data.toolsAndMachines.tools?.map(tool => ({
           name: tool.name,
           description: tool.description
         }))
       }));
       
+      formData.append(
+        "noToolsUsed",
+        JSON.stringify(data.toolsAndMachines.noToolsUsed)
+      );
+
       // Append tool images separately
       data.toolsAndMachines.tools?.forEach((tool, index) => {
         if (tool.image) {
@@ -208,11 +214,16 @@ const ProjectSubmission = () => {
         }
       });
       
-      // Append code and documentation separately
-      formData.append("code", JSON.stringify({
-        repositoryLink: data.codeAndDocumentation.repositoryLink
+      // Append code and documentation
+      formData.append("codeAndDocumentation", JSON.stringify({
+        repositoryLink: data.codeAndDocumentation.repositoryLink,
+        documentation: {
+          fileName: data.codeAndDocumentation.documentation.fileName,
+          fileSize: data.codeAndDocumentation.documentation.fileSize
+        }
       }));
       
+      // Append documentation file separately
       if (data.codeAndDocumentation.documentation.file) {
         formData.append("documentationFiles", data.codeAndDocumentation.documentation.file);
       }
@@ -222,10 +233,10 @@ const ProjectSubmission = () => {
       }
 
       // Debug log the FormData contents
-      // console.log('FormData contents:');
-      // for (let [key, value] of formData.entries()) {
-      //   console.log(`${key}:`, value);
-      // }
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
       
       const response = await submitProject(formData).unwrap();
       
@@ -235,9 +246,9 @@ const ProjectSubmission = () => {
       
       // Reset form and redirect to project/submit page
       form.reset();
-      router.push("/project/submit");
+      router.push("/project");
     } catch (error: any) {
-      // console.error("Submission error:", error);
+      console.error("Submission error:", error);
       toast.error("Failed to submit project", {
         description: error.data?.message || "Please try again later.",
       });
@@ -269,45 +280,10 @@ const ProjectSubmission = () => {
                 <AppsSection form={form} />
                 <ProjectDescription form={form} />
 
-                {/* Debug form errors */}
-                {Object.keys(form.formState.errors).length > 0 && (
-                  <div className="p-4 bg-destructive/10 rounded-lg">
-                    <h3 className="text-destructive font-medium mb-2">Form Validation Errors:</h3>
-                    <ul className="list-disc list-inside space-y-1">
-                      {Object.entries(form.formState.errors).map(([field, error]) => (
-                        <li key={field} className="text-sm text-destructive">
-                          {field}: {error.message as string}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Debug form state */}
-                {/* <div className="p-4 bg-muted rounded-lg">
-                  <h3 className="font-medium mb-2">Form State:</h3>
-                  <pre className="text-sm overflow-auto">
-                    {JSON.stringify({
-                      isValid: form.formState.isValid,
-                      isDirty: form.formState.isDirty,
-                      isSubmitting: form.formState.isSubmitting,
-                      errors: form.formState.errors,
-                      values: form.getValues()
-                    }, null, 2)}
-                  </pre>
-                </div> */}
-
                 <Button
                   type="submit"
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={isSubmitting || !form.formState.isValid}
-                  onClick={() => {
-                    console.log('Form State:', {
-                      isValid: form.formState.isValid,
-                      errors: form.formState.errors,
-                      values: form.getValues()
-                    });
-                  }}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? "Submitting..." : "Submit Project"}
                 </Button>
