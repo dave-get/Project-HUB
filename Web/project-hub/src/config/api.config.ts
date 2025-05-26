@@ -30,9 +30,15 @@ export const PROPOSAL_SUBMIT_ROUTES = {
 export const PROPOSALS_ROUTES = {
     BASE: '/api/proposals',
 }
+
+export const PROJECT_SUBMIT_ROUTES = {
+    BASE: 'api/projects/',
+    SUBMIT: '/api/projects/create',
+}
 // Combine all routes for easy access
 export const API_ROUTES = {
     AUTH: AUTH_ROUTES,
     PROPOSAL_FEEDBACK: PROPOSAL_FEEDBACK_ROUTES,
     PROPOSALS: PROPOSALS_ROUTES,
+    PROJECTS: PROJECT_SUBMIT_ROUTES
 } as const;

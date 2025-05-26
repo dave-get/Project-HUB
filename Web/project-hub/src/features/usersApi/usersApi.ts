@@ -18,6 +18,18 @@ export const usersApi = createApi({
       }),
       providesTags: ["User"],
     }),
+    getStudents: builder.query<profileType[], void>({
+      query: () => ({
+        url: USER_ROUTES.PROFILE,
+        method: "GET",
+        token: Cookies.get("access_token"),
+      }),
+      transformResponse: (response: any) => {
+        const users = Array.isArray(response) ? response : response?.data || [];
+        return users.filter((user: profileType) => user.role === "student");
+      },
+      providesTags: ["User"],
+    }),
     // Get teachers only
     getTeachers: builder.query<profileType[], void>({
       query: () => ({
@@ -26,8 +38,6 @@ export const usersApi = createApi({
         token: Cookies.get("access_token"),
       }),
       transformResponse: (response: any) => {
-        console.log("API Response:", response);
-        // The response should be an array of users
         const users = Array.isArray(response) ? response : response?.data || [];
         return users.filter((user: profileType) => user.role === "teacher");
       },
@@ -36,7 +46,5 @@ export const usersApi = createApi({
   }),
 });
 
-export const {
-  useGetUsersQuery,
-  useGetTeachersQuery,
-} = usersApi;
+export const { useGetUsersQuery, useGetTeachersQuery, useGetStudentsQuery } =
+  usersApi;

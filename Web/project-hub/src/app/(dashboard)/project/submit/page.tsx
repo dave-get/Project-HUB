@@ -1,7 +1,12 @@
+import ProjectSubmission from "@/components/project-submission-component/project-submission";
 import React from "react";
 
 const page = () => {
-  return <div>submit</div>;
+  return (
+    <div>
+      <ProjectSubmission />
+    </div>
+  );
 };
 
 export default page;
