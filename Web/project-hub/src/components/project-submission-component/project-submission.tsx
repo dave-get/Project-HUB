@@ -221,8 +221,9 @@ const ProjectSubmission = () => {
         description: "Your project has been sent for review.",
       });
       
-      // Reset form but don't redirect
+      // Reset form and redirect to project/submit page
       form.reset();
+      router.push("/projects");
     } catch (error: any) {
       console.error("Submission error:", error);
       toast.error("Failed to submit project", {
@@ -271,7 +272,7 @@ const ProjectSubmission = () => {
                 )}
 
                 {/* Debug form state */}
-                <div className="p-4 bg-muted rounded-lg">
+                {/* <div className="p-4 bg-muted rounded-lg">
                   <h3 className="font-medium mb-2">Form State:</h3>
                   <pre className="text-sm overflow-auto">
                     {JSON.stringify({
@@ -282,7 +283,7 @@ const ProjectSubmission = () => {
                       values: form.getValues()
                     }, null, 2)}
                   </pre>
-                </div>
+                </div> */}
 
                 <Button
                   type="submit"
