@@ -1,11 +1,8 @@
 import React from "react";
 import { Github, ArrowRight } from "lucide-react";
 
-interface CodeTabProps {
-  repoUrl: string;
-}
 
-const CodeTab: React.FC<CodeTabProps> = ({ repoUrl }) => {
+const CodeTab = ({ repoUrl }: { repoUrl: string }) => {
   return (
     <section>
       <h2 className="text-xl font-semibold text-foreground mb-4">

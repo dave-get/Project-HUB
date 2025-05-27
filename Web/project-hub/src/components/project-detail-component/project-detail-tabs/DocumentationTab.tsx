@@ -1,15 +1,11 @@
 import React from "react";
 import { FileText, ArrowRight } from "lucide-react";
+import { Documentation } from "@/type/project";
 
-interface DocumentationLink {
-  name: string;
-  value: string;
-}
-
-type DocumentationType = string | DocumentationLink[];
-
-const DocumentationTab: React.FC<{ documentation: DocumentationType }> = ({
+const DocumentationTab = ({
   documentation,
+}: {
+  documentation: Documentation[];
 }) => {
   if (typeof documentation === "string") {
     return (
@@ -30,10 +26,10 @@ const DocumentationTab: React.FC<{ documentation: DocumentationType }> = ({
         Documentation
       </h2>
       <div className="space-y-3">
-        {documentation.map((doc, index) => (
+        {documentation?.map((doc, index) => (
           <a
             key={index}
-            href={doc.value}
+            href={doc?.fileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between p-4 border border-border rounded-lg bg-card hover:bg-accent transition"
@@ -41,7 +37,7 @@ const DocumentationTab: React.FC<{ documentation: DocumentationType }> = ({
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-foreground" />
               <span className="text-sm font-medium text-foreground">
-                {doc.name}
+                {doc?.fileName}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm text-primary">

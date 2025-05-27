@@ -10,40 +10,14 @@ import ToolsTab from "./project-detail-tabs/ToolsTab";
 import AppsTab from "./project-detail-tabs/AppsTab";
 import CodeTab from "./project-detail-tabs/CodeTab";
 import DocumentationTab from "./project-detail-tabs/DocumentationTab";
+import { useGetProjectByIdQuery } from "@/features/getProjectsApi/getProjectsApi";
+import { Project } from "@/type/project";
 
-interface ProjectDetailProps {
-  id: string;
-  data?: {
-    id: string;
-    title: string;
-    subtitle: string;
-    date: string;
-    views: number;
-    imageUrl: string;
-    description: string;
-    tools: (
-      | string
-      | {
-          name: string;
-          description: string;
-          image: string | null;
-        }
-    )[];
-    apps: (
-      | string
-      | {
-          name: string;
-          description: string;
-          image: string | null;
-        }
-    )[];
-    code: string;
-    documentation: string | { name: string; value: string }[];
-    discussion?: string;
-  };
-}
+const ProjectDetail = ({ id }: { id: string }) => {
+  const { data } = useGetProjectByIdQuery(id);
+  const projectData = data?.project as Project;
 
-const ProjectDetail: React.FC<ProjectDetailProps> = ({ id, data }) => {
+  console.log("projectData", projectData);
   const tabs = [
     { id: "description", label: "Description" },
     { id: "tools", label: "Tools" },
@@ -60,15 +34,29 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ id, data }) => {
 
     switch (activeTab) {
       case "description":
-        return <DescriptionTab description={data.description} />;
+        return (
+          <DescriptionTab description={projectData?.projectDescription || ""} />
+        );
       case "tools":
-        return <ToolsTab tools={data.tools} />;
+        return <ToolsTab tools={projectData?.toolsAndMachines.tools || []} />;
       case "apps":
-        return <AppsTab apps={data.apps} />;
+        return <AppsTab apps={projectData?.appsAndPlatforms || []} />;
       case "code":
-        return <CodeTab repoUrl={data.code} />;
+        return (
+          <CodeTab
+            repoUrl={projectData?.codeAndDocumentation?.repositoryLink || ""}
+          />
+        );
       case "documentation":
-        return <DocumentationTab documentation={data.documentation} />;
+        return (
+          <DocumentationTab
+            documentation={
+              projectData?.codeAndDocumentation?.documentation
+                ? [projectData.codeAndDocumentation.documentation]
+                : []
+            }
+          />
+        );
       default:
         return <p>Select a tab.</p>;
     }
@@ -98,19 +86,21 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ id, data }) => {
         <div className="flex-1 bg-background p-6 rounded-lg">
           {/* Title Section */}
           <h1 className="text-3xl font-bold text-foreground mb-1">
-            {data.title}
+            {projectData?.title}
           </h1>
-          <p className="text-muted-foreground text-sm mb-4">{data.subtitle}</p>
+          <p className="text-muted-foreground text-sm mb-4">
+            {projectData?.elevatorPitch}
+          </p>
 
           {/* Meta Info */}
           <div className="flex items-center space-x-8 text-sm text-muted-foreground mb-8">
             <span className="flex items-center gap-1">
               <Calendar className="w-4 h-4" aria-hidden="true" />
-              {data.date}
+              {projectData?.createdAt}
             </span>
             <span className="flex items-center gap-1">
               <Eye className="w-4 h-4" aria-hidden="true" />
-              {data.views} views
+              {projectData?.views} views
             </span>
           </div>
 
@@ -137,7 +127,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ id, data }) => {
             <img
               src={
                 !imageError
-                  ? data.imageUrl || "/placeholder.svg"
+                  ? projectData?.coverImage || "/placeholder.svg"
                   : "/placeholder.svg"
               }
               alt="Project preview"

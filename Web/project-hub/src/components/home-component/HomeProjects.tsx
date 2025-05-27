@@ -1,9 +1,15 @@
+"use client";
 import React from "react";
 import Link from "next/link";
-import { projectDetails } from "@/lib/api";
 import ProjectCard from "@/components/posted-projects/project-card";
+import { useGetAllProjectsQuery } from "@/features/getProjectsApi/getProjectsApi";
+import { Project } from "@/type/project";
 
 export default function HomeProjects() {
+  const { data } = useGetAllProjectsQuery();
+
+  console.log("*******************", data);
+  const projectsData = (data?.projects as Project[]) || [];
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -54,22 +60,13 @@ export default function HomeProjects() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projectDetails.map((project) => (
+        {projectsData?.map((project) => (
           <Link
-            href={`/home/project-detail/${project.id}`}
-            key={project.id}
+            href={`/home/project-detail/${project?._id}`}
+            key={project?._id}
             className="transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            <ProjectCard
-              project={{
-                id: parseInt(project.id),
-                title: project.title,
-                description: project.description,
-                likes: project.views,
-                comments: 0,
-                users: project.tools?.length || 1,
-              }}
-            />
+            <ProjectCard project={project} />
           </Link>
         ))}
       </div>
