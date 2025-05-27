@@ -7,13 +7,14 @@ export interface TeamMember {
 export interface AppPlatform {
   title: string;
   description: string;
-  logo: File;
+  logo: string;
+  link?: string;
 }
 
 export interface Tool {
   name: string;
   description: string;
-  image: File;
+  image: string;
 }
 
 // Tools and Machines
@@ -35,9 +36,19 @@ export type CodeAndDocumentation = {
   documentation: Documentation;
 };
 
+//
+export type Comment = {
+  commenterId: string;
+  name: string;
+  image?: string;
+  text: string;
+  likes: number; // references to User IDs
+  createdAt: Date;
+};
+
 // Main Project Submission Response
-export type ProjectSubmissionResponse = {
-  id: string;
+export type Project = {
+  _id: string;
   title: string;
   tags: string[];
   coverImage: string;
@@ -49,6 +60,13 @@ export type ProjectSubmissionResponse = {
   codeAndDocumentation: CodeAndDocumentation;
   status: boolean;
   reviewedByTeacherId?: string;
+  comments: Comment[];
+  likes: [string];
+  views: number;
   createdAt: string;
   updatedAt: string;
+};
+
+export type Projects = {
+  projects: Project[];
 };
