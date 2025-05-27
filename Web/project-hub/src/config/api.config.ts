@@ -27,7 +27,8 @@ export const PROPOSAL_SUBMIT_ROUTES = {
 } as const;
 
 // Project Submit routes
-export const PROJECT_SUBMIT_ROUTES = {
+export const PROJECT_ROUTES = {
+  BASE: "/api/projects",
   SUBMIT: "/api/projects/create",
 } as const;
 
@@ -35,10 +36,14 @@ export const PROPOSALS_ROUTES = {
   BASE: "/api/proposals",
 };
 
+// Project Feedback routes
+export const PROJECT_FEEDBACK_ROUTES = {
+  BASE: "/api/projects/feedback",
+  BY_ID: (id: string) => `/api/projects/feedback/${id}`,
+} as const;
 // Combine all routes for easy access
 export const API_ROUTES = {
   AUTH: AUTH_ROUTES,
   PROPOSAL_FEEDBACK: PROPOSAL_FEEDBACK_ROUTES,
   PROPOSALS: PROPOSALS_ROUTES,
-  PROJECTS: PROJECT_SUBMIT_ROUTES,
 } as const;

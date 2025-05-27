@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import { useState, useEffect } from "react";
-import { Tool } from "../types";
+import { Tool } from "@/type/project";
 
 interface ToolsSectionProps {
   form: UseFormReturn<any>;
