@@ -23,11 +23,26 @@ const uploadToCloudinary = async (file, options = {}) => {
   });
 };
 
+// Helper function to safely parse JSON strings from form-data
+const safeParseFormDataJson = (value) => {
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return value; // Return original value if parsing fails
+    }
+  }
+  return value; // Return non-string values directly
+};
+
 // Create new project feedback
 export const createProjectFeedback = async (req, res) => {
   try {
-    const { projectId, teacherId, collaboratorsId, rating, feedbackType, feedbackText, status } = req.body;
+    const { projectId, teacherId, rating, feedbackText, status } = req.body;
     const files = req.files;
+    
+    // Safely parse collaboratorsId from form-data string if needed
+    const collaboratorsId = safeParseFormDataJson(req.body.collaboratorsId);
 
     // Validate status if provided
     if (status && !['pending', 'approved', 'rejected', 'need review'].includes(status)) {
@@ -35,23 +50,27 @@ export const createProjectFeedback = async (req, res) => {
     }
 
     // Upload attachments to Cloudinary
-    const attachmentUploadPromises = files ? files.map(file =>
-      uploadToCloudinary(file, { folder: 'feedback_attachments' }).then(result => ({
-        name: file.originalname,
-        url: result.secure_url,
-        size: result.bytes
-      }))
-    ) : [];
-
-    const uploadedAttachments = await Promise.all(attachmentUploadPromises);
+    let uploadedAttachments = [];
+    if (files && files.length > 0) {
+      const attachmentUploadPromises = files.map(file =>
+        uploadToCloudinary(file, { folder: 'feedback_attachments' }).then(result => ({
+          name: file.originalname,
+          url: result.secure_url,
+          size: result.bytes
+        }))
+      );
+       uploadedAttachments = await Promise.all(attachmentUploadPromises);
+    }
 
     // Create new feedback document
     const newFeedback = new ProjectFeedback({
       projectId,
       teacherId,
-      collaboratorsId: Array.isArray(collaboratorsId) ? collaboratorsId : [collaboratorsId].filter(Boolean),
+      // Ensure collaboratorsId is an array, even if a single ID or parsed array
+      collaboratorsId: Array.isArray(collaboratorsId) 
+        ? collaboratorsId 
+        : (collaboratorsId ? [collaboratorsId].filter(Boolean) : []), // Handle single ID or empty/null
       rating,
-      feedbackType: Array.isArray(feedbackType) ? feedbackType : [feedbackType].filter(Boolean),
       feedbackText,
       attachments: uploadedAttachments,
       status: status || 'pending'
@@ -59,21 +78,22 @@ export const createProjectFeedback = async (req, res) => {
 
     const savedFeedback = await newFeedback.save();
 
-    // Update project status based on feedback status
-    const projectStatus = status === 'approved' ? true : false;
-    const updatedProject = await Project.findByIdAndUpdate(
-      projectId,
-      { 
-        status: projectStatus, 
-        reviewedByTeacherId: teacherId 
-      },
-      { new: true }
-    );
+    // Update project status based on feedback status (if status was provided and valid)
+    if (status && ['approved', 'rejected', 'need review'].includes(status)) {
+      const projectStatus = status === 'approved' ? true : false; // Assuming true for approved, false otherwise
+      await Project.findByIdAndUpdate(
+        projectId,
+        { 
+          status: projectStatus, 
+          reviewedByTeacherId: teacherId 
+        },
+        { new: true }
+      );
+    }
 
     res.status(201).json({ 
       message: 'Feedback submitted successfully!', 
-      feedback: savedFeedback, 
-      projectStatus: updatedProject?.status 
+      feedback: savedFeedback
     });
 
   } catch (error) {

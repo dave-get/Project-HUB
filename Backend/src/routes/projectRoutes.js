@@ -6,6 +6,7 @@ import {
   incrementViews,
   addLike,
   addComment,
+  deleteComment,
   uploadProjectFiles,
   updateProjectStatus
 } from '../controllers/projectController.js';
@@ -26,5 +27,6 @@ router.put('/:id/status', updateProjectStatus);
 router.post('/:id/view', incrementViews);
 router.post('/:id/like', addLike);
 router.post('/:id/comment', addComment);
+router.delete('/:id/comment/:commentId', deleteComment);
 
-export default router; 
+export default router;

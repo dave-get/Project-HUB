@@ -14,7 +14,7 @@ const projectFeedbackSchema = new mongoose.Schema({
   rating: { type: Number, required: true, min: 1, max: 5 }, // Star rating (1 to 5)
   feedbackText: { type: String, required: true }, // The main feedback text
   attachments: [feedbackAttachmentSchema], // Array of attachment objects
-  status: { type: String, default: 'pending', enum: ['pending', 'aproved', 'rejected','need review'] }, // Status of the feedback
+  status: { type: String, default: 'pending', enum: ['pending', 'approved', 'rejected','need review'] }, // Status of the feedback
 }, {
   timestamps: true // Adds createdAt and updatedAt timestamps
 });

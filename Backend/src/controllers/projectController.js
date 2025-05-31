@@ -353,4 +353,40 @@ export const updateProjectStatus = async (req, res) => {
     console.error('Error updating project status:', error);
     res.status(400).json({ message: error.message });
   }
+};
+
+// Delete comment
+export const deleteComment = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const commentId = req.params.commentId;
+    const userId = req.user._id; // Get the authenticated user's ID
+
+    // Find the project
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Find the comment
+    const comment = project.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Check if user is either the comment owner or project owner
+    if (comment.commenterId.toString() !== userId.toString() && 
+        project.ownerId.toString() !== userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this comment' });
+    }
+
+    // Remove the comment
+    project.comments.pull(commentId);
+    await project.save();
+
+    res.json({ message: 'Comment deleted successfully', project });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ message: error.message });
+  }
 }; 
