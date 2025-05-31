@@ -3,14 +3,14 @@ import {
   updateUserProfile,
   getAllUserProfiles,
   getUserById,
-  uploadProfileImage
+  uploadProfileImage,
 } from "../controllers/userProfileController.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
 // Protect all routes
-
+router.use(protectRoute);
 
 // Get all User profiles
 router.get("/", getAllUserProfiles);
