@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { Search } from "lucide-react";
@@ -11,27 +11,34 @@ import {
 import Login from "../auth-component/signin";
 import { ThemeToggle } from "../layout/theme-toggler";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { useLogoutMutation } from "@/features/auth/authApi";
 import { useRouter } from "next/navigation";
 import { useGetUserQuery } from "@/features/profileApi/profileApi";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import { userAgentFromString } from "next/server";
 
 export default function Navbar() {
   const router = useRouter();
   const { data: user, isLoading } = useGetUserQuery();
   const [logout] = useLogoutMutation();
-  const token = Cookies.get('access_token')
-  console.log(user)
-  
+  const token = Cookies.get("access_token");
+  console.log(user);
+
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      Cookies.remove('access_token');
-      router.push('/');
+      Cookies.remove("access_token");
+      router.push("/");
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -72,16 +79,16 @@ export default function Navbar() {
               Project-HUB
             </Link>
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="/home" className="text-muted-foreground hover:text-foreground transition-colors">
-                Home
-              </Link>
               <Link
                 href="#"
                 className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
                 Projects
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link
+                href="#"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 Contact
               </Link>
             </nav>
@@ -106,12 +113,12 @@ export default function Navbar() {
                     <Avatar className="h-10 w-10 border-2 border-primary">
                       {!isLoading && (
                         <>
-                          <AvatarImage 
-                            src={user?.data?.imageUrl || ''} 
-                            alt={user?.data?.fullName || 'User'} 
+                          <AvatarImage
+                            src={user?.data?.imageUrl || ""}
+                            alt={user?.data?.fullName || ""}
                           />
                           <AvatarFallback>
-                            {user?.data?.fullName?.[0] || 'U'}
+                            {user?.data?.fullName?.[0] || ""}
                           </AvatarFallback>
                         </>
                       )}
@@ -122,15 +129,20 @@ export default function Navbar() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none text-foreground">
-                        {user?.data?.fullName || 'Loading...'}
+                        {user?.data?.fullName || "Loading..."}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {user?.data?.email || 'Loading...'}
+                        {user?.data?.email || "Loading..."}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
+                  <Link href="/home">
+                    <DropdownMenuItem className="text-foreground cursor-pointer">
+                      Home
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuItem
                     className="text-foreground cursor-pointer"
                     onClick={handleLogout}
                   >

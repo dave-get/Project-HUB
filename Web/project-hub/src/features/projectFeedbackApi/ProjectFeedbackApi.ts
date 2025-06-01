@@ -9,9 +9,8 @@ export interface ProjectFeedback {
   projectId: string;
   teacherId: string;
   collaboratorIds: string[];
-  userId: string;
   rating: number;
-  feedback: string;
+  feedbackText: string;
   status: string;
   attachments: ProjectAttachment[];
 }
@@ -29,20 +28,9 @@ export interface CreateProjectFeedbackRequest {
   teacherId: string;
   collaboratorIds: string[];
   rating: number;
-  feedback: string;
+  feedbackText: string;
   status: string;
   attachments?: File[];
-}
-
-// Define the update feedback request type
-export interface UpdateProjectFeedbackRequest {
-  id: string;
-  teacherId?: string;
-  collaboratorIds?: string[];
-  rating?: number;
-  feedback?: string;
-  status?: string;
-  attachments?: ProjectAttachment[];
 }
 
 export const projectFeedbackApi = createApi({
@@ -52,8 +40,8 @@ export const projectFeedbackApi = createApi({
   endpoints: (builder) => ({
     // Get feedback for a specific project
     getProjectFeedback: builder.query<ProjectFeedback[], string>({
-      query: (projectId) => ({
-        url: PROJECT_FEEDBACK_ROUTES.BY_ID(projectId),
+      query: () => ({
+        url: PROJECT_FEEDBACK_ROUTES.BASE,
         method: "GET",
         token: Cookies.get("access_token"),
       }),
@@ -74,16 +62,16 @@ export const projectFeedbackApi = createApi({
       ProjectFeedback,
       CreateProjectFeedbackRequest
     >({
-      query: ({ projectId, ...data }) => {
+      query: (data) => {
         const formData = new FormData();
-        formData.append("projectId", projectId);
+        formData.append("projectId", data.projectId);
         formData.append("teacherId", data.teacherId);
         formData.append(
-          "collaboratorIds",
+          "collaboratorsId",
           JSON.stringify(data.collaboratorIds)
         );
         formData.append("rating", data.rating.toString());
-        formData.append("feedback", data.feedback);
+        formData.append("feedbackText", data.feedbackText);
         formData.append("status", data.status);
 
         if (data.attachments) {
@@ -93,7 +81,7 @@ export const projectFeedbackApi = createApi({
         }
 
         return {
-          url: PROJECT_FEEDBACK_ROUTES.BY_ID(projectId),
+          url: PROJECT_FEEDBACK_ROUTES.BASE,
           method: "POST",
           body: formData,
           token: Cookies.get("access_token"),

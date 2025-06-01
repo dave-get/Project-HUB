@@ -61,13 +61,7 @@ export default function HomeProjects() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projectsData?.map((project) => (
-          <Link
-            href={`/home/project-detail/${project?._id}`}
-            key={project?._id}
-            className="transition-transform hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <ProjectCard project={project} />
-          </Link>
+          <ProjectCard project={project} />
         ))}
       </div>
     </div>

@@ -1,9 +1,12 @@
-import React from 'react'
+import SharedProject from "@/components/project-component/shared-project";
+import React from "react";
 
 const page = () => {
   return (
-    <div>Projects</div>
-  )
-}
+    <div>
+      <SharedProject />
+    </div>
+  );
+};
 
-export default page
+export default page;

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -18,7 +18,6 @@ import { ProjectDescription } from "./sections/ProjectDescription";
 import { projectSchema, ProjectFormValues } from "./schemas/project";
 import { ProgressTracker } from "./ProgressTracker";
 
-
 export interface ChecklistStatus {
   title: boolean;
   description: boolean;
@@ -29,7 +28,7 @@ export interface ChecklistStatus {
   code: boolean;
   documentation: boolean;
   coverImage: boolean;
-} 
+}
 
 const ProjectSubmission = () => {
   const router = useRouter();
@@ -45,7 +44,7 @@ const ProjectSubmission = () => {
     projectDescription: false,
     code: false,
     documentation: false,
-    coverImage: false
+    coverImage: false,
   });
   const [noToolsUsed, setNoToolsUsed] = useState(false);
 
@@ -60,7 +59,7 @@ const ProjectSubmission = () => {
       teamMembers: [],
       toolsAndMachines: {
         noToolsUsed: false,
-        tools: []
+        tools: [],
       },
       appsAndPlatforms: [],
       codeAndDocumentation: {
@@ -68,21 +67,21 @@ const ProjectSubmission = () => {
         documentation: {
           fileName: "",
           fileSize: "",
-          file: undefined
-        }
+          file: undefined,
+        },
       },
       status: false,
-      reviewedByTeacherId: ""
+      reviewedByTeacherId: "",
     },
   });
 
   // Add validation state logging
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      console.log('Form field changed:', { name, type, value });
+      console.log("Form field changed:", { name, type, value });
       const result = projectSchema.safeParse(value);
       if (!result.success) {
-        console.log('Validation errors:', result.error.format());
+        console.log("Validation errors:", result.error.format());
       }
     });
     return () => subscription.unsubscribe();
@@ -91,29 +90,37 @@ const ProjectSubmission = () => {
   const calculateProgress = () => {
     const values = form.getValues();
     let completedFields = 0;
-    
+
     // Define fields in the same order as the checklist
     const allFields = [
-      { value: !!values.title, name: 'title' },
-      { value: !!values.elevatorPitch, name: 'description' },
-      { value: !!values.coverImage, name: 'coverImage' },
-      { value: values.teamMembers.length > 0, name: 'team' },
-      { value: values.appsAndPlatforms.length > 0, name: 'apps' },
-      { value: !!values.projectDescription, name: 'projectDescription' },
-      { value: !!values.codeAndDocumentation.repositoryLink && !!values.codeAndDocumentation.documentation.file, name: 'code' },
-      { value: !!values.codeAndDocumentation.documentation.file, name: 'documentation' }
+      { value: !!values.title, name: "title" },
+      { value: !!values.elevatorPitch, name: "description" },
+      { value: !!values.coverImage, name: "coverImage" },
+      { value: values.teamMembers.length > 0, name: "team" },
+      { value: values.appsAndPlatforms.length > 0, name: "apps" },
+      { value: !!values.projectDescription, name: "projectDescription" },
+      {
+        value:
+          !!values.codeAndDocumentation.repositoryLink &&
+          !!values.codeAndDocumentation.documentation.file,
+        name: "code",
+      },
+      {
+        value: !!values.codeAndDocumentation.documentation.file,
+        name: "documentation",
+      },
     ];
 
     // Add tools field only if tools are used
     if (!values.toolsAndMachines.noToolsUsed) {
-      allFields.splice(4, 0, { 
-        value: (values.toolsAndMachines.tools || []).length > 0, 
-        name: 'tools' 
+      allFields.splice(4, 0, {
+        value: (values.toolsAndMachines.tools || []).length > 0,
+        name: "tools",
       });
     }
 
     // Count completed fields
-    allFields.forEach(field => {
+    allFields.forEach((field) => {
       if (field.value) completedFields++;
     });
 
@@ -131,8 +138,10 @@ const ProjectSubmission = () => {
       team: values.teamMembers.length > 0,
       apps: values.appsAndPlatforms.length > 0,
       projectDescription: !!values.projectDescription,
-      code: !!values.codeAndDocumentation.repositoryLink && !!values.codeAndDocumentation.documentation.file,
-      documentation: !!values.codeAndDocumentation.documentation.file
+      code:
+        !!values.codeAndDocumentation.repositoryLink &&
+        !!values.codeAndDocumentation.documentation.file,
+      documentation: !!values.codeAndDocumentation.documentation.file,
     };
 
     // Only add tools status if tools are used
@@ -159,64 +168,80 @@ const ProjectSubmission = () => {
   const onSubmit = async (data: ProjectFormValues) => {
     try {
       setIsSubmitting(true);
-      
+
       const formData = new FormData();
-      
+
       // Append basic fields
       formData.append("title", data.title);
       formData.append("elevatorPitch", data.elevatorPitch);
       formData.append("projectDescription", data.projectDescription);
       formData.append("tags", JSON.stringify(data.tags));
       formData.append("status", data.status.toString());
-      
+
       // Append files
       if (data.coverImage) {
         formData.append("coverImage", data.coverImage);
       }
-      
+
       // Append team members
       formData.append("teamMembers", JSON.stringify(data.teamMembers));
-      
+
       // Append tools
-      formData.append("toolsAndMachines", JSON.stringify({
-        noToolsUsed: data.toolsAndMachines.noToolsUsed,
-        tools: data.toolsAndMachines.tools?.map(tool => ({
-          name: tool.name,
-          description: tool.description
-        }))
-      }));
-      
+      formData.append(
+        "toolsAndMachines",
+        JSON.stringify({
+          noToolsUsed: data.toolsAndMachines.noToolsUsed,
+          tools: data.toolsAndMachines.tools?.map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+          })),
+        })
+      );
+
+      formData.append(
+        "noToolsUsed",
+        JSON.stringify(data.toolsAndMachines.noToolsUsed)
+      );
       // Append tool images separately
       data.toolsAndMachines.tools?.forEach((tool, index) => {
         if (tool.image) {
           formData.append("toolImages", tool.image);
         }
       });
-      
+
       // Append apps
-      formData.append("appsAndPlatforms", JSON.stringify(
-        data.appsAndPlatforms.map(app => ({
-          title: app.title,
-          description: app.description
-        }))
-      ));
-      
+      formData.append(
+        "appsAndPlatforms",
+        JSON.stringify(
+          data.appsAndPlatforms.map((app) => ({
+            title: app.title,
+            description: app.description,
+          }))
+        )
+      );
+
       // Append app logos separately
       data.appsAndPlatforms.forEach((app) => {
         if (app.logo) {
           formData.append("appLogos", app.logo);
         }
       });
-      
+
       // Append code and documentation separately
-      formData.append("code", JSON.stringify({
-        repositoryLink: data.codeAndDocumentation.repositoryLink
-      }));
-      
+      formData.append(
+        "code",
+        JSON.stringify({
+          repositoryLink: data.codeAndDocumentation.repositoryLink,
+        })
+      );
+
       if (data.codeAndDocumentation.documentation.file) {
-        formData.append("documentationFiles", data.codeAndDocumentation.documentation.file);
+        formData.append(
+          "documentationFiles",
+          data.codeAndDocumentation.documentation.file
+        );
       }
-      
+
       if (data.reviewedByTeacherId) {
         formData.append("reviewedByTeacherId", data.reviewedByTeacherId);
       }
@@ -226,13 +251,13 @@ const ProjectSubmission = () => {
       // for (let [key, value] of formData.entries()) {
       //   console.log(`${key}:`, value);
       // }
-      
+
       const response = await submitProject(formData).unwrap();
-      
+
       toast.success("Project submitted successfully!", {
         description: "Your project has been sent for review.",
       });
-      
+
       // Reset form and redirect to project/submit page
       form.reset();
       router.push("/project/submit");
@@ -250,21 +275,28 @@ const ProjectSubmission = () => {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl p-6">
         <div className="mb-12">
-          <h1 className="text-3xl font-bold text-foreground">Project Submission</h1>
-          <p className="text-muted-foreground mt-2">Create and submit your awesome project</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Project Submission
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Create and submit your awesome project
+          </p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
           {/* Main content */}
           <div className="flex-1 space-y-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
                 <BasicInfo form={form} />
                 <TeamSection form={form} />
-                <ToolsSection 
-                  form={form} 
-                  noToolsUsed={noToolsUsed} 
-                  setNoToolsUsed={setNoToolsUsed} 
+                <ToolsSection
+                  form={form}
+                  noToolsUsed={noToolsUsed}
+                  setNoToolsUsed={setNoToolsUsed}
                 />
                 <AppsSection form={form} />
                 <ProjectDescription form={form} />
@@ -272,13 +304,17 @@ const ProjectSubmission = () => {
                 {/* Debug form errors */}
                 {Object.keys(form.formState.errors).length > 0 && (
                   <div className="p-4 bg-destructive/10 rounded-lg">
-                    <h3 className="text-destructive font-medium mb-2">Form Validation Errors:</h3>
+                    <h3 className="text-destructive font-medium mb-2">
+                      Form Validation Errors:
+                    </h3>
                     <ul className="list-disc list-inside space-y-1">
-                      {Object.entries(form.formState.errors).map(([field, error]) => (
-                        <li key={field} className="text-sm text-destructive">
-                          {field}: {error.message as string}
-                        </li>
-                      ))}
+                      {Object.entries(form.formState.errors).map(
+                        ([field, error]) => (
+                          <li key={field} className="text-sm text-destructive">
+                            {field}: {error.message as string}
+                          </li>
+                        )
+                      )}
                     </ul>
                   </div>
                 )}
@@ -302,10 +338,10 @@ const ProjectSubmission = () => {
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={isSubmitting || !form.formState.isValid}
                   onClick={() => {
-                    console.log('Form State:', {
+                    console.log("Form State:", {
                       isValid: form.formState.isValid,
                       errors: form.formState.errors,
-                      values: form.getValues()
+                      values: form.getValues(),
                     });
                   }}
                 >
@@ -317,9 +353,9 @@ const ProjectSubmission = () => {
 
           {/* Right sidebar */}
           <div className="w-full md:w-80 shrink-0 space-y-6">
-            <ProgressTracker 
-              checklistStatus={checklistStatus} 
-              noToolsUsed={noToolsUsed} 
+            <ProgressTracker
+              checklistStatus={checklistStatus}
+              noToolsUsed={noToolsUsed}
             />
           </div>
         </div>

@@ -65,6 +65,18 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    
+    /* New dark mode specific variables */
+    --feedback-bg: 222.2 84% 6%;
+    --feedback-card: 222.2 84% 7%;
+    --feedback-border: 217.2 32.6% 20%;
+    --feedback-text: 210 20% 96%;
+    --feedback-text-muted: 215 20.2% 70%;
+    --feedback-star-filled: 43 96% 56%;
+    --feedback-star-empty: 217.2 32.6% 25%;
+    --feedback-badge-approved: 142 76% 36%;
+    --feedback-badge-pending: 48 96% 53%;
+    --feedback-badge-rejected: 0 84% 60%;
   }
 }
 
@@ -73,6 +85,41 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-200;
+  }
+}
+
+/* Dark mode specific component styles */
+@layer components {
+  .dark .feedback-card {
+    @apply bg-[hsl(var(--feedback-card))] border-[hsl(var(--feedback-border))];
+  }
+
+  .dark .feedback-text {
+    @apply text-[hsl(var(--feedback-text))];
+  }
+
+  .dark .feedback-text-muted {
+    @apply text-[hsl(var(--feedback-text-muted))];
+  }
+
+  .dark .feedback-star-filled {
+    @apply text-[hsl(var(--feedback-star-filled))] fill-[hsl(var(--feedback-star-filled))];
+  }
+
+  .dark .feedback-star-empty {
+    @apply text-[hsl(var(--feedback-star-empty))] fill-[hsl(var(--feedback-star-empty))];
+  }
+
+  .dark .feedback-badge-approved {
+    @apply bg-[hsl(var(--feedback-badge-approved)/0.2)] text-[hsl(var(--feedback-badge-approved))];
+  }
+
+  .dark .feedback-badge-pending {
+    @apply bg-[hsl(var(--feedback-badge-pending)/0.2)] text-[hsl(var(--feedback-badge-pending))];
+  }
+
+  .dark .feedback-badge-rejected {
+    @apply bg-[hsl(var(--feedback-badge-rejected)/0.2)] text-[hsl(var(--feedback-badge-rejected))];
   }
 }

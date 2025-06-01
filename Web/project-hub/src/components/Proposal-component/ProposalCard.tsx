@@ -54,7 +54,7 @@ export function ProposalCard({
             {date} {time}
           </div>
           {(status === "approved" || status === "rejected") && (
-            <Link href="/proposal/feedback">
+            <Link href={`/proposal/viewfeedback/${proposals._id}`}>
               <Button variant="link" className="p-0 h-auto">
                 View Feedback
               </Button>
@@ -97,7 +97,7 @@ export function ProposalCard({
           <span className="font-semibold">Submitted:</span> {date} {time}
         </div>
         {(status === "approved" || status === "rejected") && (
-          <Link href="/proposal/feedback">
+          <Link href={`/proposal/viewfeedback/${proposals._id}`}>
             <Button variant="link" className="p-0 h-auto">
               View Feedback
             </Button>
