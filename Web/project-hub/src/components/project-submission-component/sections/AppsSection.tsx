@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
-import { useState } from "react";
+import { useState, DragEvent } from "react";
 
 interface App {
   title: string;
@@ -24,6 +24,7 @@ export const AppsSection = ({ form }: AppsSectionProps) => {
     description: "",
     logo: null as unknown as File
   });
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleAddApp = () => {
     if (newApp.title && newApp.description && newApp.logo) {
@@ -44,6 +45,29 @@ export const AppsSection = ({ form }: AppsSectionProps) => {
     const updatedApps = apps.filter((_, i) => i !== index);
     setApps(updatedApps);
     form.setValue("appsAndPlatforms", updatedApps);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setNewApp({ ...newApp, logo: file });
+    }
   };
 
   return (
@@ -121,11 +145,29 @@ export const AppsSection = ({ form }: AppsSectionProps) => {
                   </label>
                   <label
                     htmlFor="app-logo-upload"
-                    className="block border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:bg-muted transition-colors"
+                    className={`block border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+                      isDragging 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:bg-muted'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                   >
-                    <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                      <Upload className="h-6 w-6 text-primary" />
+                    <div className={`mx-auto h-12 w-12 rounded-full flex items-center justify-center mb-3 ${
+                      isDragging ? 'bg-primary/20' : 'bg-primary/10'
+                    }`}>
+                      <Upload className={`h-6 w-6 ${isDragging ? 'text-primary animate-bounce' : 'text-primary'}`} />
                     </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {isDragging ? 'Drop your image here' : 'Click to upload or drag and drop'}
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
+                    {newApp.logo && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Selected file: {newApp.logo.name}
+                      </p>
+                    )}
                     <input
                       type="file"
                       accept="image/*"
@@ -138,15 +180,6 @@ export const AppsSection = ({ form }: AppsSectionProps) => {
                         }
                       }}
                     />
-                    <span className="text-sm font-medium text-foreground">
-                      Click to upload or drag and drop
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
-                    {newApp.logo && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Selected file: {newApp.logo.name}
-                      </p>
-                    )}
                   </label>
                 </div>
               </div>
