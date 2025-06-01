@@ -70,13 +70,8 @@ const menuItems: MenuItem[] = [
   {
     title: "Project",
     url: "/project",
-    items: [
-      {
-        title: "Submit",
-        url: `/project/submit`,
-      },
-    ],
     icon: <Puzzle />,
+    items: [],
   },
   {
     title: "Students",

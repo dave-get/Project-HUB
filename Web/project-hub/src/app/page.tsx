@@ -1,17 +1,17 @@
 import Footer from "@/components/landing-page-component/footer";
 import Navbar from "@/components/landing-page-component/navbar";
-import ProjectGrid from "@/components/landing-page-component/project-grid";
+import ProjectGrid from "@/components/posted-projects/project-grid";
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 bg-gray-50">
+      <main className="flex-1 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Projects</h1>
+            <h1 className="text-2xl font-bold dark:text-white">Projects</h1>
             <div className="flex gap-2">
-              <button className="bg-blue-600 text-white p-2 rounded-md">
+              <button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white p-2 rounded-md">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -30,7 +30,7 @@ export default function Home() {
                   <rect width="7" height="7" x="3" y="14" rx="1" />
                 </svg>
               </button>
-              <button className="text-gray-500 p-2 rounded-md">
+              <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 rounded-md">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"

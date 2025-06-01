@@ -1,4 +1,5 @@
 export type profileType = {
+  _id: string;
   email: string;
   password: string;
   fullName: string;
@@ -7,11 +8,12 @@ export type profileType = {
   bio: string;
   phone: string;
   location: string;
-  socialLinks: {
-    linkedin: string;
-    github: string;
-    twitter: string;
-  };
+  imageUrl: string;
+  socialLinks: Array<{
+    _id: string;
+    platform: 'github' | 'linkedin' | 'twitter';
+    url: string;
+  }>;
   skills: [string];
 };
 
