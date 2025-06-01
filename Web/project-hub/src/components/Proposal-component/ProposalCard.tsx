@@ -17,8 +17,8 @@ export function ProposalCard({
   proposals: Submission;
   layout: "grid" | "list";
 }) {
-  const status = proposals?.feedbackList[0]?.status.toLowerCase() || "pending";
-  console.log("Proposal status:", status);
+  const last = proposals?.feedbackList.length - 1
+  const status = proposals?.feedbackList[last]?.status.toLowerCase() || "pending";
   const date = new Date(proposals?.createdAt).toLocaleDateString();
   const time = new Date(proposals?.createdAt).toLocaleTimeString();
   if (layout === "grid") {

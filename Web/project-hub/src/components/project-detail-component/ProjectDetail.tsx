@@ -17,6 +17,16 @@ const ProjectDetail = ({ id }: { id: string }) => {
   const { data } = useGetProjectByIdQuery(id);
   const projectData = data?.project as Project;
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    return date.toLocaleDateString("en-US", options);
+  };
+
   console.log("projectData", projectData);
   const tabs = [
     { id: "description", label: "Description" },
@@ -80,12 +90,12 @@ const ProjectDetail = ({ id }: { id: string }) => {
   }
 
   return (
-    <div className="px-16 py-6 bg-background">
-      <div className="flex flex-col lg:flex-row gap-8">
+    <div className="px-4 sm:px-6 md:px-8 lg:px-16 py-4 sm:py-6 bg-background">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
         {/* Main Content */}
-        <div className="flex-1 bg-background p-6 rounded-lg">
+        <div className="flex-1 bg-background p-4 sm:p-6 rounded-lg">
           {/* Title Section */}
-          <h1 className="text-3xl font-bold text-foreground mb-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
             {projectData?.title}
           </h1>
           <p className="text-muted-foreground text-sm mb-4">
@@ -93,10 +103,12 @@ const ProjectDetail = ({ id }: { id: string }) => {
           </p>
 
           {/* Meta Info */}
-          <div className="flex items-center space-x-8 text-sm text-muted-foreground mb-8">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-sm text-muted-foreground mb-6 sm:mb-8">
             <span className="flex items-center gap-1">
               <Calendar className="w-4 h-4" aria-hidden="true" />
-              {projectData?.createdAt}
+              {projectData?.createdAt
+                ? formatDate(projectData.createdAt)
+                : "Date not available"}
             </span>
             <span className="flex items-center gap-1">
               <Eye className="w-4 h-4" aria-hidden="true" />
@@ -105,7 +117,7 @@ const ProjectDetail = ({ id }: { id: string }) => {
           </div>
 
           {/* Share and Save Buttons */}
-          <div className="flex space-x-4 mb-6">
+          <div className="flex gap-4 mb-6">
             <button
               className="flex items-center gap-2 px-4 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90"
               aria-label="Share project"
@@ -123,7 +135,7 @@ const ProjectDetail = ({ id }: { id: string }) => {
           </div>
 
           {/* Image */}
-          <div className="w-full h-96 bg-card rounded-xl overflow-hidden mb-6 border border-border">
+          <div className="w-full h-48 sm:h-72 md:h-96 bg-card rounded-xl overflow-hidden mb-6 border border-border">
             <img
               src={
                 !imageError
@@ -139,7 +151,7 @@ const ProjectDetail = ({ id }: { id: string }) => {
           {/* Tabs */}
           <div className="border-b border-border mb-6">
             <div
-              className="flex justify-between text-sm font-medium"
+              className="flex flex-wrap sm:flex-nowrap justify-between text-sm font-medium"
               role="tablist"
               aria-label="Project information tabs"
             >
@@ -150,7 +162,7 @@ const ProjectDetail = ({ id }: { id: string }) => {
                   aria-selected={activeTab === tab.id}
                   aria-controls={`${tab.id}-panel`}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-4  rounded-t-md transition-colors ${
+                  className={`py-2 px-2 sm:px-4 text-sm rounded-t-md transition-colors ${
                     activeTab === tab.id
                       ? "border-b-2 border-primary text-foreground font-medium bg-background"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
@@ -164,28 +176,31 @@ const ProjectDetail = ({ id }: { id: string }) => {
 
           {/* Tab Content */}
           <div
-            className="mb-12 p-6 border border-border rounded-lg bg-card/50"
+            className="mb-8 sm:mb-12 p-4 sm:p-6 border border-border rounded-lg bg-card/50 max-w-full sm:max-w-[985px] max-h-72"
             role="tabpanel"
             id={`${activeTab}-panel`}
             aria-labelledby={activeTab}
           >
-            <div className="prose dark:prose-invert max-w-none">
-              {renderTabContent()}
-            </div>
+            <div className="prose dark:prose-invert">{renderTabContent()}</div>
           </div>
 
           {/* Discussion Section */}
-          <div className="bg-card rounded-lg p-6 border border-border">
-            <CommentSection />
+          <div className="bg-card rounded-lg p-4 sm:p-6 border border-border">
+            <CommentSection
+              projectId={id}
+              comments={projectData?.comments || []}
+            />
           </div>
         </div>
 
         {/* Sidebar */}
-        <div className="w-full lg:w-80 shrink-0">
+        <div className="w-full lg:w-80 shrink-0 mt-4 lg:mt-0">
           <TableContent
             projectId={id}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            likesCount={projectData?.likes?.length || 0}
+            commentsCount={projectData?.comments?.length || 0}
           />
         </div>
       </div>
