@@ -3,7 +3,7 @@ import { baseQuery } from "@/lib/baseQuery";
 import Cookies from "js-cookie";
 import { PROJECT_SUBMIT_ROUTES } from "@/config/api.config";
 import { ProjectFormValues } from "@/components/project-submission-component/schemas/project";
-import { ProjectSubmissionResponse } from "@/type/project";
+import { Projects } from "@/type/project";
 
 // Define the project submission response type
 
@@ -13,7 +13,7 @@ export const projectSubmitApi = createApi({
   tagTypes: ["ProjectSubmission"],
   endpoints: (builder) => ({
     // Create new project submission
-    submitProject: builder.mutation<ProjectSubmissionResponse, FormData>({
+    submitProject: builder.mutation<Projects, FormData>({
       query: (data) => {
         console.log('Submitting project to:', PROJECT_SUBMIT_ROUTES.SUBMIT);
         return {

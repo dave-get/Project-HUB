@@ -8,7 +8,7 @@ import { Submission, SubmissionResponse } from '@/type/proposal';
 const ApprovedProposals = () => {
   const { data: proposals } = useGetProposalsQuery();
   const approvedProposals = proposals?.data?.filter(
-    (proposal: Submission) => proposal.feedbackList[proposal.feedbackList.length -1]?.status === "Approved"
+    (proposal: Submission) => proposal.feedbackList[proposal.feedbackList.length - 1]?.status === "Approved"
   ) || [];
 
   return (

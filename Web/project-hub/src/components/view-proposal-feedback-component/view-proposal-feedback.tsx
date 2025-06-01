@@ -9,18 +9,21 @@ import { useGetProposalsQuery } from "@/features/proposalsApi/proposalsApi";
 import { SubmissionResponse } from "@/type/proposal";
 import { useGetTeachersQuery } from "@/features/usersApi/usersApi";
 import Link from "next/link";
-
+import { UserType } from "@/type/profile";
+import { useGetUserQuery } from "@/features/profileApi/profileApi";
 const ProposalReview = ({ proposalid }: { proposalid: string }) => {
   const { data } = useGetProposalsQuery();
-  const { data: teachersData } = useGetTeachersQuery();
+  const { data: teachers } = useGetTeachersQuery();
+  const { data: user } = useGetUserQuery();
 
   const proposalData = data as SubmissionResponse;
   const proposal = proposalData?.data?.find(
     (proposal) => proposal._id === proposalid
   );
 
-  const feedbackTeacherId = proposal?.feedbackList?.[proposal?.feedbackList.length - 1]?.teacher;
-  const feedbackTeacher = teachersData?.find(
+  const teacherData = user as UserType;
+  const feedbackTeacherId = proposal?.feedbackList?.[0]?.teacher;
+  const feedbackTeacher = teachers?.find(
     (teacher) => teacher._id === feedbackTeacherId
   );
 
@@ -32,7 +35,10 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
         <ProjectHeader
           title={proposal?.title || ""}
           submissionDate={proposal?.feedbackList[0].createdAt || ""}
-          status={proposal?.feedbackList[0].status || "Pending"}
+          status={
+            proposal?.feedbackList[proposal?.feedbackList.length - 1].status ||
+            "Pending"
+          }
         />
 
         {/* Main Content Layout */}
@@ -65,7 +71,8 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
                 </div>
 
                 {/* Submit Button */}
-                {proposal?.feedbackList[0]?.status === "Approved" ? (
+                {proposal?.feedbackList[proposal?.feedbackList.length - 1]?.status === "Approved" &&
+                teacherData?.data?.role !== "teacher" ? (
                   <div className="flex justify-end pt-6 border-t">
                     <Link href={`/project/submit`}>
                       <Button
@@ -84,7 +91,10 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             <Attachments
-              attachments={proposal?.feedbackList[proposal?.feedbackList.length - 1]?.attachments || []}
+              attachments={
+                proposal?.feedbackList[proposal?.feedbackList.length - 1]
+                  ?.attachments || []
+              }
             />
           </div>
         </div>

@@ -8,8 +8,8 @@ import { Project } from "@/type/project";
 export default function HomeProjects() {
   const { data, isLoading } = useGetAllProjectsQuery();
 
-  // console.log("*******************", data);
   const projectsData = (data?.projects as Project[]) || [];
+  const approvedProjects = projectsData.filter(project => project?.status === true);
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -75,7 +75,7 @@ export default function HomeProjects() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projectsData?.map((project) => (
+            {approvedProjects?.map((project) => (
               <ProjectCard project={project} />
             ))}
           </div>

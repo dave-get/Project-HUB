@@ -19,7 +19,7 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
   const [newTool, setNewTool] = useState<Tool>({
     name: "",
     description: "",
-    image: null as unknown as File
+    image: ""
   });
   const [isDragging, setIsDragging] = useState(false);
 
@@ -67,7 +67,7 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
         noToolsUsed: false,
         tools: updatedTools
       }, { shouldValidate: true });
-      setNewTool({ name: "", description: "", image: null as unknown as File });
+      setNewTool({ name: "", description: "", image: "" });
       setShowToolForm(false);
     }
   };
@@ -100,7 +100,7 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
 
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      setNewTool({ ...newTool, image: file });
+      setNewTool({ ...newTool, image: URL.createObjectURL(file) });
     }
   };
 
@@ -153,7 +153,7 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
                     {tool.image && (
                       <div className="h-10 w-10 rounded-lg overflow-hidden">
                         <img
-                          src={URL.createObjectURL(tool.image)}
+                          src={tool.image}
                           alt={tool.name}
                           className="h-full w-full object-cover"
                         />
@@ -227,7 +227,7 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
                       <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
                       {newTool.image && (
                         <p className="text-sm text-muted-foreground mt-2">
-                          Selected file: {newTool.image.name}
+                          Selected file: {newTool.image.split('/').pop()}
                         </p>
                       )}
                       <input
@@ -238,7 +238,7 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            setNewTool({ ...newTool, image: file });
+                            setNewTool({ ...newTool, image: URL.createObjectURL(file) });
                           }
                         }}
                       />
@@ -257,7 +257,7 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
                     variant="outline"
                     onClick={() => {
                       setShowToolForm(false);
-                      setNewTool({ name: "", description: "", image: null as unknown as File });
+                      setNewTool({ name: "", description: "", image: "" });
                     }}
                     className="flex-1"
                   >
