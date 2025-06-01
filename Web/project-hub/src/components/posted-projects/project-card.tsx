@@ -13,6 +13,7 @@ import {
 import { useLikeProjectMutation } from "@/features/getProjectsApi/getProjectsApi";
 import Link from "next/link";
 import { useGetUserQuery } from "@/features/profileApi/profileApi";
+import { usePathname } from "next/navigation";
 
 export default function ProjectCard({ project }: { project: Project }) {
   const { data: user } = useGetUsersQuery();
@@ -20,6 +21,8 @@ export default function ProjectCard({ project }: { project: Project }) {
   const [likeProject] = useLikeProjectMutation();
   const userData = user as profileType[];
   const teamMembers = project?.teamMembers;
+  const pathname = usePathname();
+  const isDetailHome = pathname.includes("/home");
 
   const isLiked = project?.likes?.includes(profile?.data?._id || "");
 
@@ -39,7 +42,12 @@ export default function ProjectCard({ project }: { project: Project }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border dark:border-gray-700">
-      <Link href={`/project-detail/${project?._id}`} className="">
+      <Link
+        href={`/${isDetailHome ? "home/project-detail" : "project-detail"}/${
+          project?._id
+        }`}
+        className=""
+      >
         <div className="bg-gray-200 dark:bg-gray-700 h-[200px] flex items-center justify-center relative overflow-hidden">
           <Image
             src={project?.coverImage || "/placeholder-project.jpg"}

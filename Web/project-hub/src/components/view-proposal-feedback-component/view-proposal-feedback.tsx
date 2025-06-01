@@ -8,6 +8,7 @@ import { ProjectHeader } from "./proposal-header";
 import { useGetProposalsQuery } from "@/features/proposalsApi/proposalsApi";
 import { SubmissionResponse } from "@/type/proposal";
 import { useGetTeachersQuery } from "@/features/usersApi/usersApi";
+import Link from "next/link";
 
 const ProposalReview = ({ proposalid }: { proposalid: string }) => {
   const { data } = useGetProposalsQuery();
@@ -66,12 +67,14 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
                 {/* Submit Button */}
                 {proposal?.feedbackList[0]?.status === "Approved" ? (
                   <div className="flex justify-end pt-6 border-t">
-                    <Button
-                      size="lg"
-                      className="bg-slate-700 hover:bg-slate-800"
-                    >
-                      Submit Project
-                    </Button>
+                    <Link href={`/project/submit`}>
+                      <Button
+                        size="lg"
+                        className="bg-slate-700 hover:bg-slate-800"
+                      >
+                        Submit Project
+                      </Button>
+                    </Link>
                   </div>
                 ) : null}
               </CardContent>
