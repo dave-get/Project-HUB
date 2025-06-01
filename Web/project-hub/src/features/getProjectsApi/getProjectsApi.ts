@@ -29,7 +29,13 @@ export const getProjectsApi = createApi({
         method: "GET",
         token: Cookies.get("access_token"),
       }),
-      providesTags: ["Project"],
+      providesTags: (result) =>
+        result
+          ? [
+              { type: "Project", id: result.project._id },
+              { type: "Project", id: "LIST" },
+            ]
+          : [{ type: "Project", id: "LIST" }],
     }),
     // Like a project
     likeProject: builder.mutation<Project, LikeProjectRequest>({
@@ -39,7 +45,10 @@ export const getProjectsApi = createApi({
         body: { userId },
         token: Cookies.get("access_token"),
       }),
-      invalidatesTags: ["Project"],
+      invalidatesTags: (result, error, { projectId }) => [
+        { type: "Project", id: projectId },
+        { type: "Project", id: "LIST" },
+      ],
     }),
   }),
 });
