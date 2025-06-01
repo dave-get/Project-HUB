@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { UseFormReturn } from "react-hook-form";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useGetStudentsQuery } from "@/features/usersApi/usersApi";
 import { profileType } from "@/type/profile";
 import { TeamMember } from "@/type/project";
@@ -23,6 +23,17 @@ export const TeamSection = ({ form }: TeamSectionProps) => {
   const searchRef = useRef<HTMLDivElement>(null);
   const {data} = useGetStudentsQuery()
   const students = data as profileType[]
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleStudentSelect = (student: profileType) => {
     setSelectedStudent({

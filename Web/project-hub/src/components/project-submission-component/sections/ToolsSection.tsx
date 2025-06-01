@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, DragEvent } from "react";
 import { Tool } from "@/type/project";
 
 interface ToolsSectionProps {
@@ -21,6 +21,38 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
     description: "",
     image: null as unknown as File
   });
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Update tools state when noToolsUsed changes
+  useEffect(() => {
+    if (noToolsUsed) {
+      setTools([]);
+      form.setValue("toolsAndMachines", {
+        noToolsUsed: true,
+        tools: []
+      }, { shouldValidate: true });
+    } else if (tools.length === 0) {
+      // Only update form when tools array is empty to prevent infinite loop
+      form.setValue("toolsAndMachines", {
+        noToolsUsed: false,
+        tools: []
+      }, { shouldValidate: true });
+    }
+  }, [noToolsUsed, form]);
+
+  // Initialize tools from form values
+  useEffect(() => {
+    const initializeTools = () => {
+      const toolsAndMachines = form.getValues("toolsAndMachines");
+      if (toolsAndMachines) {
+        setNoToolsUsed(toolsAndMachines.noToolsUsed);
+        if (!toolsAndMachines.noToolsUsed && toolsAndMachines.tools) {
+          setTools(toolsAndMachines.tools);
+        }
+      }
+    };
+    initializeTools();
+  }, []); // Only run once on mount
 
   const handleAddTool = () => {
     if (newTool.name && newTool.description && newTool.image) {
@@ -46,27 +78,31 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
     form.setValue("toolsAndMachines", {
       noToolsUsed: false,
       tools: updatedTools
-    });
+    }, { shouldValidate: true });
   };
 
-  // Update tools state when noToolsUsed changes
-  useEffect(() => {
-    if (noToolsUsed) {
-      setTools([]);
-      form.setValue("toolsAndMachines", {
-        noToolsUsed: true,
-        tools: []
-      });
-    }
-  }, [noToolsUsed, form]);
+  const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
 
-  // Initialize tools from form values
-  useEffect(() => {
-    const toolsAndMachines = form.getValues("toolsAndMachines");
-    if (toolsAndMachines && !toolsAndMachines.noToolsUsed && toolsAndMachines.tools) {
-      setTools(toolsAndMachines.tools);
+  const handleDragLeave = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setNewTool({ ...newTool, image: file });
     }
-  }, [form]);
+  };
 
   return (
     <Card className="border-border">
@@ -88,13 +124,19 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
               className="h-4 w-4 rounded text-primary focus:ring-primary border-input bg-background"
               checked={noToolsUsed}
               onChange={(e) => {
-                setNoToolsUsed(e.target.checked);
-                if (e.target.checked) {
+                const checked = e.target.checked;
+                setNoToolsUsed(checked);
+                if (checked) {
                   setTools([]);
                   form.setValue("toolsAndMachines", {
                     noToolsUsed: true,
                     tools: []
-                  });
+                  }, { shouldValidate: true });
+                } else {
+                  form.setValue("toolsAndMachines", {
+                    noToolsUsed: false,
+                    tools: tools
+                  }, { shouldValidate: true });
                 }
               }}
             />
@@ -165,11 +207,29 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
                     </label>
                     <label
                       htmlFor="tool-image-upload"
-                      className="block border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:bg-muted transition-colors"
+                      className={`block border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+                        isDragging 
+                          ? 'border-primary bg-primary/10' 
+                          : 'border-border hover:bg-muted'
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
                     >
-                      <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                        <Upload className="h-6 w-6 text-primary" />
+                      <div className={`mx-auto h-12 w-12 rounded-full flex items-center justify-center mb-3 ${
+                        isDragging ? 'bg-primary/20' : 'bg-primary/10'
+                      }`}>
+                        <Upload className={`h-6 w-6 ${isDragging ? 'text-primary animate-bounce' : 'text-primary'}`} />
                       </div>
+                      <span className="text-sm font-medium text-foreground">
+                        {isDragging ? 'Drop your image here' : 'Click to upload or drag and drop'}
+                      </span>
+                      <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
+                      {newTool.image && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Selected file: {newTool.image.name}
+                        </p>
+                      )}
                       <input
                         type="file"
                         accept="image/*"
@@ -182,15 +242,6 @@ export const ToolsSection = ({ form, noToolsUsed, setNoToolsUsed }: ToolsSection
                           }
                         }}
                       />
-                      <span className="text-sm font-medium text-foreground">
-                        Click to upload or drag and drop
-                      </span>
-                      <p className="text-xs text-muted-foreground mt-1">SVG, PNG, JPG or GIF (max. 800x400px)</p>
-                      {newTool.image && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Selected file: {newTool.image.name}
-                        </p>
-                      )}
                     </label>
                   </div>
                 </div>

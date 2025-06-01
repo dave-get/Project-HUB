@@ -32,6 +32,11 @@ export const PROJECT_ROUTES = {
   SUBMIT: "/api/projects/create",
 } as const;
 
+// Project Submit routes
+export const PROJECT_SUBMIT_ROUTES = {
+    SUBMIT: "/api/projects/create",
+} as const;
+
 export const PROPOSALS_ROUTES = {
   BASE: "/api/proposals",
 };
