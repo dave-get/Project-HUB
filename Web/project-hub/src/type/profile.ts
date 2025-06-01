@@ -9,11 +9,11 @@ export type profileType = {
   phone: string;
   location: string;
   imageUrl: string;
-  socialLinks: {
-    linkedin: string;
-    github: string;
-    twitter: string;
-  };
+  socialLinks: Array<{
+    _id: string;
+    platform: 'github' | 'linkedin' | 'twitter';
+    url: string;
+  }>;
   skills: [string];
 };
 

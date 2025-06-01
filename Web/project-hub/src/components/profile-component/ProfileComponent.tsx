@@ -1,57 +1,48 @@
-'use client'
+"use client";
 import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "../ui/card";
 import { Mail, Phone, MapPin, Github, Linkedin, Twitter } from "lucide-react";
 import { useGetUserQuery } from "@/features/profileApi/profileApi";
-import { UserType } from "@/type/profile";
+import { profileType } from "@/type/profile";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-interface SocialLink {
-  platform: string;
-  url: string;
-  _id: string;
-}
-
-interface ProfileResponse {
-  success: boolean;
-  data: {
-    socialLinks: SocialLink[];
-    fullName: string;
-    role: string;
-    department: string;
-    bio: string;
-    phone: string;
-    email: string;
-    location: string;
-    imageUrl: string;
-    skills: string[];
-  };
-}
-
 const ProfileComponent = () => {
-  const {data} = useGetUserQuery()
-  const profileData = (data as unknown) as ProfileResponse;
-  
-  console.log("Full profile data:", profileData);
-  console.log("Social links data:", profileData?.data?.socialLinks);
+  const { data } = useGetUserQuery();
+  const profileData = data?.data as profileType;
+
+  // console.log("Full profile data:", profileData);
+  // console.log("Social links data:", profileData?.socialLinks);
 
   return (
     <>
       <div className="flex flex-col md:flex-row gap-6">
         <Card className="flex-1 min-w-[320px]">
-          <CardHeader className="flex flex-row items-center gap-4">
-          <Avatar className="h-20 w-20 border-2 border-green-500">
-            <AvatarImage src={`${profileData?.data?.imageUrl}`} alt="Dawit Getachew" />
-            <AvatarFallback>{profileData?.data?.fullName[0]}</AvatarFallback>
-          </Avatar>
-            <div>
-              <CardTitle>{profileData?.data?.fullName}</CardTitle>
-              <div className="text-xs text-gray-500">{profileData?.data?.role}</div>
-              <div className="text-sm text-muted-foreground">{profileData?.data?.department}</div>
+          <CardHeader className="flex flex-row gap-4">
+            <Avatar className="h-52 w-52 border-2 border-green-500 rounded-lg">
+              <AvatarImage
+                src={`${profileData?.imageUrl}`}
+                alt="Dawit Getachew"
+              />
+              <AvatarFallback>{profileData?.fullName[0]}</AvatarFallback>
+            </Avatar>
+            <div className="space-y-2">
+              <CardTitle className="text-3xl">
+                {profileData?.fullName}
+              </CardTitle>
+              <div className="text-2xs text-gray-500">{profileData?.role}</div>
+              <div className="text-xl text-muted-foreground">
+                {profileData?.department}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <CardDescription>{profileData?.data?.bio}</CardDescription>
+            <CardDescription>{profileData?.bio}</CardDescription>
           </CardContent>
         </Card>
 
@@ -65,15 +56,15 @@ const ProfileComponent = () => {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-sm">
                   <Phone size={16} />
-                  <span>{profileData?.data?.phone}</span>
+                  <span>{profileData?.phone}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Mail size={16} />
-                  <span>{profileData?.data?.email}</span>
+                  <span>{profileData?.email}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin size={16} />
-                  <span>{profileData?.data?.location}</span>
+                  <span>{profileData?.location}</span>
                 </div>
               </div>
             </CardContent>
@@ -84,17 +75,17 @@ const ProfileComponent = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-2">
-                {profileData?.data?.socialLinks?.map((link) => (
-                  <a 
+                {profileData?.socialLinks?.map((link) => (
+                  <a
                     key={link._id}
                     href={link.url}
-                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline" 
-                    target="_blank" 
+                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                    target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {link.platform === 'github' && <Github size={16} />}
-                    {link.platform === 'linkedin' && <Linkedin size={16} />}
-                    {link.platform === 'twitter' && <Twitter size={16} />}
+                    {link.platform === "github" && <Github size={16} />}
+                    {link.platform === "linkedin" && <Linkedin size={16} />}
+                    {link.platform === "twitter" && <Twitter size={16} />}
                     {link.url}
                   </a>
                 ))}
@@ -109,8 +100,11 @@ const ProfileComponent = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {profileData?.data?.skills?.map((skill) => (
-              <span key={skill} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
+            {profileData?.skills?.map((skill) => (
+              <span
+                key={skill}
+                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium"
+              >
                 {skill}
               </span>
             ))}
@@ -121,4 +115,4 @@ const ProfileComponent = () => {
   );
 };
 
-export default ProfileComponent; 
+export default ProfileComponent;

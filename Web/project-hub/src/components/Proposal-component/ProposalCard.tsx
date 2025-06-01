@@ -17,8 +17,8 @@ export function ProposalCard({
   proposals: Submission;
   layout: "grid" | "list";
 }) {
-  const status = proposals?.feedbackList[0]?.status.toLowerCase() || "pending";
-  console.log("Proposal status:", status);
+  const last = proposals?.feedbackList.length - 1
+  const status = proposals?.feedbackList[last]?.status.toLowerCase() || "pending";
   const date = new Date(proposals?.createdAt).toLocaleDateString();
   const time = new Date(proposals?.createdAt).toLocaleTimeString();
   if (layout === "grid") {
@@ -54,7 +54,7 @@ export function ProposalCard({
             {date} {time}
           </div>
           {(status === "approved" || status === "rejected") && (
-            <Link href="/proposal/feedback">
+            <Link href={`/proposal/viewfeedback/${proposals._id}`}>
               <Button variant="link" className="p-0 h-auto">
                 View Feedback
               </Button>
@@ -97,7 +97,7 @@ export function ProposalCard({
           <span className="font-semibold">Submitted:</span> {date} {time}
         </div>
         {(status === "approved" || status === "rejected") && (
-          <Link href="/proposal/feedback">
+          <Link href={`/proposal/viewfeedback/${proposals._id}`}>
             <Button variant="link" className="p-0 h-auto">
               View Feedback
             </Button>

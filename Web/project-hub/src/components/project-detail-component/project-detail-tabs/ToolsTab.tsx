@@ -1,19 +1,8 @@
 import React from "react";
 import { Wrench } from "lucide-react";
+import { Tool } from "@/type/project";
 
-type Tool =
-  | string
-  | {
-      name: string;
-      description: string;
-      image: string | null;
-    };
-
-interface ToolsTabProps {
-  tools: Tool[];
-}
-
-const ToolsTab: React.FC<ToolsTabProps> = ({ tools }) => {
+const ToolsTab = ({ tools }: { tools: Tool[] }) => {
   return (
     <section>
       <h2 className="text-xl font-semibold text-foreground mb-4">
