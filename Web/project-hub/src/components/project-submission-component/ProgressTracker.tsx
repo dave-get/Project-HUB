@@ -13,6 +13,7 @@ interface ProgressTrackerProps {
     code: boolean;
     documentation: boolean;
     coverImage: boolean;
+    tags: boolean;
   };
   noToolsUsed: boolean;
 }
@@ -21,23 +22,19 @@ export const ProgressTracker = ({ checklistStatus, noToolsUsed }: ProgressTracke
   const baseChecklistItems = [
     { key: 'title', label: 'Project Title' },
     { key: 'description', label: 'Short Description' },
+    { key: 'tags', label: 'Project Tags' },
     { key: 'coverImage', label: 'Cover Image' },
     { key: 'team', label: 'The Team' },
+    { key: 'tools', label: 'Tools and Machines' },
     { key: 'apps', label: 'Apps and Platforms' },
     { key: 'projectDescription', label: 'Project Description' },
     { key: 'code', label: 'Code' },
     { key: 'documentation', label: 'Documentation' }
   ];
 
-  const toolsItem = { key: 'tools', label: 'Tools and Machines' };
-
   const checklistOrder = noToolsUsed 
-    ? baseChecklistItems 
-    : [
-        ...baseChecklistItems.slice(0, 4),
-        toolsItem,
-        ...baseChecklistItems.slice(4)
-      ];
+    ? baseChecklistItems.filter(item => item.key !== 'tools')
+    : baseChecklistItems;
 
   // Dynamic progress calculation
   const totalItems = checklistOrder.length;
@@ -67,7 +64,7 @@ export const ProgressTracker = ({ checklistStatus, noToolsUsed }: ProgressTracke
 
         <div className="space-y-1.5 mt-4">
           {checklistOrder.map(item => (
-            <div key={item.key} className="flex items-center gap-2 p-1.5 rounded hover:bg-muted">
+            <div key={item.key} className="flex items-center gap-2 p-1.5 rounded">
               {checklistStatus[item.key as keyof typeof checklistStatus] ? (
                 <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
               ) : (

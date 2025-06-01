@@ -35,7 +35,15 @@ export const projectSchema = z.object({
           (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
           "Only .jpg, .jpeg, .png and .webp formats are supported."
         )
-    })).optional()
+    }))
+  }).superRefine((data, ctx) => {
+    if (!data.noToolsUsed && (!data.tools || data.tools.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "At least one tool is required when tools are used",
+        path: ["tools"]
+      });
+    }
   }),
   appsAndPlatforms: z.array(z.object({
     title: z.string().min(1, "Title is required"),

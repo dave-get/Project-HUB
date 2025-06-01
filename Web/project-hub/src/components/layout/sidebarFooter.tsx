@@ -23,6 +23,7 @@ const SidebarSetting = () => {
       console.error("Logout failed:", error);
     }
   };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem className="hover:bg-muted p-2 rounded-lg">
@@ -35,12 +36,14 @@ const SidebarSetting = () => {
       </SidebarMenuItem>
 
       <SidebarMenuItem className="hover:bg-muted p-2 rounded-lg">
-        <button onClick={handleLogout}>
-          <SidebarMenuButton tooltip="Logout" className="text-foreground">
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </SidebarMenuButton>
-        </button>
+        <SidebarMenuButton 
+          tooltip="Logout" 
+          className="text-foreground"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
+        </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
   );
