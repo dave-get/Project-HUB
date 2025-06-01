@@ -56,7 +56,7 @@ const DocumentationCard = ({
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center border-t pt-2 mt-auto">
-          <Link href={`/proposal/feedback/${proposals?._id}`}>
+          <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
             <Button
               variant="link"
               className="h-auto p-0 text-sm font-normal text-primary"
@@ -99,7 +99,7 @@ const DocumentationCard = ({
               {formattedDate}
             </div>
 
-            <Link href={`/proposal/feedback/${proposals?._id}`}>
+            <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
               <Button
                 variant="link"
                 className="h-auto p-0 text-sm font-normal text-primary"
