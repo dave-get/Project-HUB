@@ -35,7 +35,7 @@ export const store = configureStore({
       .concat(projectFeedbackApi.middleware)
       .concat(projectSubmitApi.middleware)
       .concat(getProjectsApi.middleware)
-      .concat(commentsApi.middleware),
+      .concat(commentsApi.middleware)
 });
 
 export type RootState = ReturnType<typeof store.getState>;
