@@ -97,12 +97,12 @@ export default function ProjectCard({ project }: { project: Project }) {
               return (
                 <div
                   key={member.id}
-                  className="relative w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400"
+                  className="relative w-8 h-8 rounded-full cursor-pointer flex items-center justify-center text-xs text-gray-500 dark:text-gray-200"
                 >
                   {" "}
                   <HoverCard>
                     <HoverCardTrigger asChild>
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-8 w-8 border dark:border-white border-gray-800">
                         <AvatarImage
                           src={memberData?.imageUrl}
                           alt={member.name}
