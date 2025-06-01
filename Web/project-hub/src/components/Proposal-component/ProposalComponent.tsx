@@ -89,9 +89,11 @@ export default function ProposalsPage() {
             <Input type="date" className="w-[180px] pl-10" />
             <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           </div>
-          <Link href="/proposal/submit">
+          {isStudent &&
+          (<Link href="/proposal/submit">
             <Button variant="outline">New Proposal</Button>
-          </Link>
+          </Link>)
+          }
 
           <div className="flex border rounded-md">
             <Button
