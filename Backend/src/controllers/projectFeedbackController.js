@@ -41,13 +41,18 @@ export const createProjectFeedback = async (req, res) => {
     const { projectId, teacherId, rating, feedbackText, status } = req.body;
     const files = req.files;
     
+    // Validate required fields
+    if (!projectId || !teacherId) {
+      return res.status(400).json({ message: 'Project ID and Teacher ID are required' });
+    }
+
+    // Validate status
+    if (!status || !['pending', 'approved', 'rejected', 'need review'].includes(status)) {
+      return res.status(400).json({ message: 'Valid status is required (pending, approved, rejected, or need review)' });
+    }
+
     // Safely parse collaboratorsId from form-data string if needed
     const collaboratorsId = safeParseFormDataJson(req.body.collaboratorsId);
-
-    // Validate status if provided
-    if (status && !['pending', 'approved', 'rejected', 'need review'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
-    }
 
     // Upload attachments to Cloudinary
     let uploadedAttachments = [];
@@ -59,41 +64,55 @@ export const createProjectFeedback = async (req, res) => {
           size: result.bytes
         }))
       );
-       uploadedAttachments = await Promise.all(attachmentUploadPromises);
+      uploadedAttachments = await Promise.all(attachmentUploadPromises);
+    }
+
+    // First, find the project to ensure it exists
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
     }
 
     // Create new feedback document
     const newFeedback = new ProjectFeedback({
       projectId,
       teacherId,
-      // Ensure collaboratorsId is an array, even if a single ID or parsed array
       collaboratorsId: Array.isArray(collaboratorsId) 
         ? collaboratorsId 
-        : (collaboratorsId ? [collaboratorsId].filter(Boolean) : []), // Handle single ID or empty/null
+        : (collaboratorsId ? [collaboratorsId].filter(Boolean) : []),
       rating,
       feedbackText,
       attachments: uploadedAttachments,
-      status: status || 'pending'
+      status: status
     });
 
+    // Save the feedback
     const savedFeedback = await newFeedback.save();
 
-    // Update project status based on feedback status (if status was provided and valid)
-    if (status && ['approved', 'rejected', 'need review'].includes(status)) {
-      const projectStatus = status === 'approved' ? true : false; // Assuming true for approved, false otherwise
-      await Project.findByIdAndUpdate(
-        projectId,
-        { 
-          status: projectStatus, 
-          reviewedByTeacherId: teacherId 
-        },
-        { new: true }
-      );
+    // Update project status based on feedback status
+    const projectStatus = status === 'approved' ? true : false;
+    
+    // Update the project with new status and reviewer
+    const updatedProject = await Project.findByIdAndUpdate(
+      projectId,
+      { 
+        status: projectStatus,
+        reviewedByTeacherId: teacherId,
+        lastReviewedAt: new Date()
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProject) {
+      // If project update fails, delete the feedback and return error
+      await ProjectFeedback.findByIdAndDelete(savedFeedback._id);
+      return res.status(500).json({ message: 'Failed to update project status' });
     }
 
     res.status(201).json({ 
-      message: 'Feedback submitted successfully!', 
-      feedback: savedFeedback
+      message: 'Feedback submitted and project status updated successfully!', 
+      feedback: savedFeedback,
+      project: updatedProject
     });
 
   } catch (error) {
