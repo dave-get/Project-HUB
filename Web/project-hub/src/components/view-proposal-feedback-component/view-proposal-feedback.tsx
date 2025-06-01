@@ -19,7 +19,7 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
     (proposal) => proposal._id === proposalid
   );
 
-  const feedbackTeacherId = proposal?.feedbackList?.[0]?.teacher;
+  const feedbackTeacherId = proposal?.feedbackList?.[proposal?.feedbackList.length - 1]?.teacher;
   const feedbackTeacher = teachersData?.find(
     (teacher) => teacher._id === feedbackTeacherId
   );
@@ -84,7 +84,7 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             <Attachments
-              attachments={proposal?.feedbackList[0]?.attachments || []}
+              attachments={proposal?.feedbackList[proposal?.feedbackList.length - 1]?.attachments || []}
             />
           </div>
         </div>
