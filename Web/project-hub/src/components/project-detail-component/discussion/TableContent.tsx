@@ -6,12 +6,16 @@ interface TableContentProps {
   projectId: string;
   activeTab: string;
   onTabChange: (tabId: string) => void;
+  likesCount?: number;
+  commentsCount?: number;
 }
 
 const TableContent: React.FC<TableContentProps> = ({
   projectId,
   activeTab,
   onTabChange,
+  likesCount ,
+  commentsCount ,
 }) => {
   const tocItems = [
     { title: "Description", href: "#description", id: "description" },
@@ -73,11 +77,13 @@ const TableContent: React.FC<TableContentProps> = ({
         <div className="grid grid-cols-2 divide-x divide-border">
           <button className="flex flex-col items-center justify-center py-3 px-4 hover:bg-accent transition-colors">
             <Heart className="h-5 w-5 text-muted-foreground mb-1" />
-            <span className="text-sm text-muted-foreground">12</span>
+            <span className="text-sm text-muted-foreground">{likesCount}</span>
           </button>
           <button className="flex flex-col items-center justify-center py-3 px-4 hover:bg-accent transition-colors">
             <MessageSquare className="h-5 w-5 text-muted-foreground mb-1" />
-            <span className="text-sm text-muted-foreground">3</span>
+            <span className="text-sm text-muted-foreground">
+              {commentsCount}
+            </span>
           </button>
         </div>
       </div>
