@@ -19,20 +19,20 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
     (proposal) => proposal._id === proposalid
   );
 
-  const feedbackTeacherId = proposal?.feedbackList?.[0]?.teacher;
+  const feedbackTeacherId = proposal?.feedbackList?.[proposal?.feedbackList.length - 1]?.teacher;
   const feedbackTeacher = teachersData?.find(
     (teacher) => teacher._id === feedbackTeacherId
   );
 
-  console.log("Proposal Data:", proposal);
+  // console.log("Proposal Data:", proposal);
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
         {/* Project Header */}
         <ProjectHeader
           title={proposal?.title || ""}
-          submissionDate={proposal?.feedbackList[0].createdAt || ""}
-          status={proposal?.feedbackList[0].status || "Pending"}
+          submissionDate={proposal?.feedbackList[proposal?.feedbackList.length - 1].createdAt || ""}
+          status={proposal?.feedbackList[proposal?.feedbackList.length - 1].status || "Pending"}
         />
 
         {/* Main Content Layout */}
@@ -84,7 +84,7 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             <Attachments
-              attachments={proposal?.feedbackList[0]?.attachments || []}
+              attachments={proposal?.feedbackList[proposal?.feedbackList.length - 1]?.attachments || []}
             />
           </div>
         </div>
