@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Submission } from "@/type/proposal";
+import { Badge } from "../ui/badge";
 
 const DocumentationCard = ({
   proposals,
@@ -44,7 +45,7 @@ const DocumentationCard = ({
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium line-clamp-2">
             {proposals?.title}
-          </CardTitle>
+          </CardTitle>   
         </CardHeader>
         <CardContent className="space-y-2">
           <p className="text-sm text-muted-foreground">
@@ -99,6 +100,7 @@ const DocumentationCard = ({
               {formattedDate}
             </div>
 
+            {proposals?.status === "pedding" ? 
             <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
               <Button
                 variant="link"
@@ -106,7 +108,13 @@ const DocumentationCard = ({
               >
                 Give feedback <ChevronRight className="ml-1 h-3 w-3" />
               </Button>
-            </Link>
+            </Link>:
+            <Link href={`/proposal/viewfeedback/${proposals._id}`}>
+            <Button variant="link" className="p-0 h-auto">
+              View Feedback
+            </Button>
+          </Link>
+            }
           </div>
 
           <Button
