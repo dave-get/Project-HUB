@@ -2,18 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/lib/baseQuery";
 import Cookies from "js-cookie";
 import { PROJECT_FEEDBACK_ROUTES } from "@/config/api.config";
-
-// Define the project feedback type
-export interface ProjectFeedback {
-  id: string;
-  projectId: string;
-  teacherId: string;
-  collaboratorIds: string[];
-  rating: number;
-  feedbackText: string;
-  status: string;
-  attachments: ProjectAttachment[];
-}
+import { ProjectFeedback, ProjectFeedbackList } from "@/type/project-feedback";
 
 // Define the attachment type
 export interface ProjectAttachment {
@@ -39,19 +28,16 @@ export const projectFeedbackApi = createApi({
   tagTypes: ["ProjectFeedback"],
   endpoints: (builder) => ({
     // Get feedback for a specific project
-    getProjectFeedback: builder.query<ProjectFeedback[], string>({
-      query: () => ({
-        url: PROJECT_FEEDBACK_ROUTES.BASE,
+    getProjectFeedback: builder.query<ProjectFeedback, string>({
+      query: (projectId) => ({
+        url: PROJECT_FEEDBACK_ROUTES.BY_ID(projectId),
         method: "GET",
         token: Cookies.get("access_token"),
       }),
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({
-                type: "ProjectFeedback" as const,
-                id,
-              })),
+              { type: "ProjectFeedback" as const, id: result.id },
               { type: "ProjectFeedback", id: "LIST" },
             ]
           : [{ type: "ProjectFeedback", id: "LIST" }],
