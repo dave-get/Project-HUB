@@ -22,7 +22,7 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
   );
 
   const teacherData = user as UserType;
-  const feedbackTeacherId = proposal?.feedbackList?.[0]?.teacher;
+  const feedbackTeacherId = proposal?.feedbackList?.[proposal?.feedbackList?.length - 1]?.teacher;
   const feedbackTeacher = teachers?.find(
     (teacher) => teacher._id === feedbackTeacherId
   );
@@ -35,7 +35,7 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
         <ProjectHeader
           title={proposal?.title || ""}
           submissionDate={proposal?.feedbackList[0].createdAt || ""}
-          status={proposal?.feedbackList[0].status || "Pending"}
+          status={proposal?.feedbackList[proposal?.feedbackList.length - 1].status || "Pending"}
         />
 
         {/* Main Content Layout */}
@@ -68,7 +68,7 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
                 </div>
 
                 {/* Submit Button */}
-                {proposal?.feedbackList[0]?.status === "Approved" &&  teacherData?.data?.role !== "teacher" ?(
+                {proposal?.feedbackList[proposal?.feedbackList.length - 1]?.status === "Approved" &&  teacherData?.data?.role !== "teacher" ?(
                   <div className="flex justify-end pt-6 border-t">
                     <Link href={`/project/submit`}>
                       <Button

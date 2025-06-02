@@ -57,14 +57,21 @@ const DocumentationCard = ({
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center border-t pt-2 mt-auto">
-          <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
-            <Button
-              variant="link"
-              className="h-auto p-0 text-sm font-normal text-primary"
-            >
-              Give feedback <ChevronRight className="ml-1 h-3 w-3" />
+          {proposals?.feedbackList.length < 1 ? 
+            <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
+              <Button
+                variant="link"
+                className="h-auto p-0 text-sm font-normal text-primary"
+              >
+                Give feedback <ChevronRight className="ml-1 h-3 w-3" />
+              </Button>
+            </Link>:
+            <Link href={`/proposal/viewfeedback/${proposals._id}`}>
+            <Button variant="link" className="p-0 h-auto">
+              View Feedback
             </Button>
           </Link>
+            }
           <Button
             variant="ghost"
             size="sm"
@@ -100,7 +107,7 @@ const DocumentationCard = ({
               {formattedDate}
             </div>
 
-            {proposals?.status === "pedding" ? 
+            {proposals?.feedbackList.length < 1 ? 
             <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
               <Button
                 variant="link"
