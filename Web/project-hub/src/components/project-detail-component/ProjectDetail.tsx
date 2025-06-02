@@ -210,7 +210,7 @@ const ProjectDetail = ({ id }: { id: string }) => {
           </div>
 
           {/* Discussion Section */}
-          <div className="bg-card rounded-lg p-4 sm:p-6 border border-border max-h-64">
+          <div className="bg-card rounded-lg p-4 sm:p-6 border border-border">
             <CommentSection
               projectId={id}
               comments={projectData?.comments || []}
