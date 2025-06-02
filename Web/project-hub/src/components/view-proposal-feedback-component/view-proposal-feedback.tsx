@@ -9,7 +9,7 @@ import { useGetProposalsQuery } from "@/features/proposalsApi/proposalsApi";
 import { SubmissionResponse } from "@/type/proposal";
 import { useGetTeachersQuery } from "@/features/usersApi/usersApi";
 import Link from "next/link";
-import {  UserType } from "@/type/profile";
+import { UserType } from "@/type/profile";
 import { useGetUserQuery } from "@/features/profileApi/profileApi";
 const ProposalReview = ({ proposalid }: { proposalid: string }) => {
   const { data } = useGetProposalsQuery();
@@ -22,20 +22,26 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
   );
 
   const teacherData = user as UserType;
-  const feedbackTeacherId = proposal?.feedbackList?.[proposal?.feedbackList?.length - 1]?.teacher;
+  const feedbackTeacherId = proposal?.feedbackList?.[0]?.teacher;
   const feedbackTeacher = teachers?.find(
     (teacher) => teacher._id === feedbackTeacherId
   );
 
-  console.log("Proposal Data:", proposal);
+  // console.log("Proposal Data:", proposal);
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
         {/* Project Header */}
         <ProjectHeader
           title={proposal?.title || ""}
-          submissionDate={proposal?.feedbackList[0].createdAt || ""}
-          status={proposal?.feedbackList[proposal?.feedbackList.length - 1].status || "Pending"}
+          submissionDate={
+            proposal?.feedbackList[proposal?.feedbackList.length - 1]
+              ?.createdAt || ""
+          }
+          status={
+            proposal?.feedbackList[proposal?.feedbackList.length - 1]?.status ||
+            "Pending"
+          }
         />
 
         {/* Main Content Layout */}
@@ -53,22 +59,24 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
 
                 {/* Feedback Sections */}
                 <div className="space-y-8 mb-8">
-                  {proposal?.feedbackList[0].sections?.map(
-                    (feedback, index) => (
-                      <FeedbackSection
-                        key={index}
-                        title={feedback.title}
-                        rating={feedback.rating}
-                        strengths={feedback.strengths}
-                        areasForImprovement={feedback.areasForImprovement}
-                        comments={feedback.comments}
-                      />
-                    )
-                  )}
+                  {proposal?.feedbackList[
+                    proposal?.feedbackList.length - 1
+                  ]?.sections?.map((feedback, index) => (
+                    <FeedbackSection
+                      key={index}
+                      title={feedback.title}
+                      rating={feedback.rating}
+                      strengths={feedback.strengths}
+                      areasForImprovement={feedback.areasForImprovement}
+                      comments={feedback.comments}
+                    />
+                  ))}
                 </div>
 
                 {/* Submit Button */}
-                {proposal?.feedbackList[proposal?.feedbackList.length - 1]?.status === "Approved" &&  teacherData?.data?.role !== "teacher" ?(
+                {proposal?.feedbackList[proposal?.feedbackList?.length - 1]
+                  ?.status === "Approved" &&
+                teacherData?.data?.role !== "teacher" ? (
                   <div className="flex justify-end pt-6 border-t">
                     <Link href={`/project/submit`}>
                       <Button
@@ -87,7 +95,10 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             <Attachments
-              attachments={proposal?.feedbackList[0]?.attachments || []}
+              attachments={
+                proposal?.feedbackList[proposal?.feedbackList.length - 1]
+                  ?.attachments || []
+              }
             />
           </div>
         </div>
