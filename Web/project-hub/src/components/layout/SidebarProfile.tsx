@@ -50,7 +50,7 @@ const SidebarProfile = () => {
           className="flex items-center gap-3 rounded-lg bg-accent p-3"
           href="/profile"
         >
-          <Avatar className="h-10 w-10 border-2 border-green-500">
+          <Avatar className="h-10 w-10 border-2 border-primary">
             <AvatarImage src={user?.data?.imageUrl} alt="Dawit Getachew" />
             <AvatarFallback>{user?.data?.fullName[0]}</AvatarFallback>
           </Avatar>
