@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, Eye, Share2, Bookmark } from "lucide-react";
 import CommentSection from "./discussion/Discussion";
 import TableContent from "./discussion/TableContent";
@@ -10,10 +10,14 @@ import ToolsTab from "./project-detail-tabs/ToolsTab";
 import AppsTab from "./project-detail-tabs/AppsTab";
 import CodeTab from "./project-detail-tabs/CodeTab";
 import DocumentationTab from "./project-detail-tabs/DocumentationTab";
-import { useGetProjectByIdQuery } from "@/features/getProjectsApi/getProjectsApi";
+import {
+  useGetProjectByIdQuery,
+  useIncrementViewMutation,
+} from "@/features/getProjectsApi/getProjectsApi";
 import { Project } from "@/type/project";
 
 const ProjectDetail = ({ id }: { id: string }) => {
+  const [expanded, setExpanded] = useState(false);
   const { data } = useGetProjectByIdQuery(id);
   const projectData = data?.project as Project;
 
@@ -26,6 +30,14 @@ const ProjectDetail = ({ id }: { id: string }) => {
     };
     return date.toLocaleDateString("en-US", options);
   };
+
+  const [incrementView] = useIncrementViewMutation();
+
+  useEffect(() => {
+    if (id) {
+      incrementView(id);
+    }
+  }, [id, incrementView]);
 
   console.log("projectData", projectData);
   const tabs = [
@@ -176,12 +188,25 @@ const ProjectDetail = ({ id }: { id: string }) => {
 
           {/* Tab Content */}
           <div
-            className="mb-8 sm:mb-12 p-4 sm:p-6 border border-border rounded-lg bg-card/50 max-w-full sm:max-w-[985px] max-h-72"
+            className="mb-8 sm:mb-12 p-4 sm:p-6 border border-border rounded-lg bg-card/50 max-w-full sm:max-w-[985px]"
             role="tabpanel"
             id={`${activeTab}-panel`}
             aria-labelledby={activeTab}
           >
-            <div className="prose dark:prose-invert">{renderTabContent()}</div>
+            <div
+              className={`prose dark:prose-invert break-words transition-all duration-300 ${
+                expanded ? "max-h-[1000px]" : "max-h-56 overflow-hidden"
+              }`}
+            >
+              {renderTabContent()}
+            </div>
+
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="mt-2 text-sm text-blue-500 hover:underline"
+            >
+              {expanded ? "Show Less" : "Show More"}
+            </button>
           </div>
 
           {/* Discussion Section */}

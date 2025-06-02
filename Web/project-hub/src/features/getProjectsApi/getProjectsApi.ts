@@ -41,6 +41,15 @@ export const getProjectsApi = createApi({
       }),
       invalidatesTags: ["Project"],
     }),
+    //increamentView
+    incrementView: builder.mutation<void, string>({
+      query: (projectId) => ({
+        url: `${PROJECT_ROUTES.BASE}/${projectId}/view`,
+        method: "POST",
+        token: Cookies.get("access_token"), // optional if not needed
+      }),
+      invalidatesTags: ["Project"],
+    }),
   }),
 });
 
@@ -48,4 +57,5 @@ export const {
   useGetAllProjectsQuery,
   useGetProjectByIdQuery,
   useLikeProjectMutation,
+  useIncrementViewMutation
 } = getProjectsApi;
