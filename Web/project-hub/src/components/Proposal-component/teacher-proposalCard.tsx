@@ -1,5 +1,11 @@
 import { Calendar, Download, ChevronRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Submission } from "@/type/proposal";
@@ -45,7 +51,7 @@ const DocumentationCard = ({
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium line-clamp-2">
             {proposals?.title}
-          </CardTitle>   
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <p className="text-sm text-muted-foreground">
@@ -57,22 +63,32 @@ const DocumentationCard = ({
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center border-t pt-2 mt-auto">
-          <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
-            <Button
-              variant="link"
-              className="h-auto p-0 text-sm font-normal text-primary"
-            >
-              Give feedback <ChevronRight className="ml-1 h-3 w-3" />
-            </Button>
-          </Link>
+          {proposals?.feedbackList.length < 1 ? (
+            <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
+              <Button
+                variant="link"
+                className="h-auto p-0 text-sm font-normal text-primary"
+              >
+                Give feedback <ChevronRight className="ml-1 h-3 w-3" />
+              </Button>
+            </Link>
+          ) : (
+            <Link href={`/proposal/viewfeedback/${proposals._id}`}>
+              <Button variant="link" className="p-0 h-auto">
+                View Feedback
+              </Button>
+            </Link>
+          )}
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 truncate"
             onClick={handleDownload}
           >
             <Download className="h-4 w-4" />
-            <span className="max-w-[150px] truncate">{proposals?.attachments?.[0]?.name}</span>
+            <span className="max-w-[150px] truncate">
+              {proposals?.attachments?.[0]?.name}
+            </span>
             <span className="text-xs text-muted-foreground">
               {proposals?.attachments?.[0]?.size}
             </span>
@@ -86,7 +102,9 @@ const DocumentationCard = ({
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">{proposals?.title}</CardTitle>
+        <CardTitle className="text-lg font-medium">
+          {proposals?.title}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
@@ -100,21 +118,22 @@ const DocumentationCard = ({
               {formattedDate}
             </div>
 
-            {proposals?.status === "pedding" ? 
-            <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
-              <Button
-                variant="link"
-                className="h-auto p-0 text-sm font-normal text-primary"
-              >
-                Give feedback <ChevronRight className="ml-1 h-3 w-3" />
-              </Button>
-            </Link>:
-            <Link href={`/proposal/viewfeedback/${proposals._id}`}>
-            <Button variant="link" className="p-0 h-auto">
-              View Feedback
-            </Button>
-          </Link>
-            }
+            {proposals?.feedbackList.length < 1 ? (
+              <Link href={`/proposal/submitfeedback/${proposals?._id}`}>
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-sm font-normal text-primary"
+                >
+                  Give feedback <ChevronRight className="ml-1 h-3 w-3" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href={`/proposal/viewfeedback/${proposals._id}`}>
+                <Button variant="link" className="p-0 h-auto">
+                  View Feedback
+                </Button>
+              </Link>
+            )}
           </div>
 
           <Button
@@ -124,7 +143,9 @@ const DocumentationCard = ({
             onClick={handleDownload}
           >
             <Download className="h-4 w-4" />
-            <span className="max-w-[150px] truncate">{proposals?.attachments?.[0]?.name}</span>
+            <span className="max-w-[150px] truncate">
+              {proposals?.attachments?.[0]?.name}
+            </span>
             <span className="text-xs text-muted-foreground">
               {proposals?.attachments?.[0]?.size}
             </span>
