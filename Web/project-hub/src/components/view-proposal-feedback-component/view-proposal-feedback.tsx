@@ -27,16 +27,19 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
     (teacher) => teacher._id === feedbackTeacherId
   );
 
-  console.log("Proposal Data:", proposal);
+  // console.log("Proposal Data:", proposal);
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
         {/* Project Header */}
         <ProjectHeader
           title={proposal?.title || ""}
-          submissionDate={proposal?.feedbackList[0].createdAt || ""}
+          submissionDate={
+            proposal?.feedbackList[proposal?.feedbackList.length - 1]
+              ?.createdAt || ""
+          }
           status={
-            proposal?.feedbackList[proposal?.feedbackList.length - 1].status ||
+            proposal?.feedbackList[proposal?.feedbackList.length - 1]?.status ||
             "Pending"
           }
         />
@@ -56,22 +59,23 @@ const ProposalReview = ({ proposalid }: { proposalid: string }) => {
 
                 {/* Feedback Sections */}
                 <div className="space-y-8 mb-8">
-                  {proposal?.feedbackList[0].sections?.map(
-                    (feedback, index) => (
-                      <FeedbackSection
-                        key={index}
-                        title={feedback.title}
-                        rating={feedback.rating}
-                        strengths={feedback.strengths}
-                        areasForImprovement={feedback.areasForImprovement}
-                        comments={feedback.comments}
-                      />
-                    )
-                  )}
+                  {proposal?.feedbackList[
+                    proposal?.feedbackList.length - 1
+                  ]?.sections?.map((feedback, index) => (
+                    <FeedbackSection
+                      key={index}
+                      title={feedback.title}
+                      rating={feedback.rating}
+                      strengths={feedback.strengths}
+                      areasForImprovement={feedback.areasForImprovement}
+                      comments={feedback.comments}
+                    />
+                  ))}
                 </div>
 
                 {/* Submit Button */}
-                {proposal?.feedbackList[proposal?.feedbackList.length - 1]?.status === "Approved" &&
+                {proposal?.feedbackList[proposal?.feedbackList?.length - 1]
+                  ?.status === "Approved" &&
                 teacherData?.data?.role !== "teacher" ? (
                   <div className="flex justify-end pt-6 border-t">
                     <Link href={`/project/submit`}>
